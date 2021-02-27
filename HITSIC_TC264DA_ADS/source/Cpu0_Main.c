@@ -31,8 +31,10 @@
 #include "SmartCar_Uart.h"
 #include "SmartCar_Upload.h"
 #include "SmartCar_Oled.h"
+#include "SmartCar_GPIO.h"
 #include "SmartCar_Pwm.h"
 #include "SmartCar_MPU.h"
+#include "SmartCar_PIT.h"
 #include "SmartCar_MT9V034.h"
 #include "SmartCar_Systick.h"
 #include "common.h"
@@ -40,6 +42,7 @@
 
 #pragma section all "cpu0_dsram"
 //IfxCpu_syncEvent g_cpuSyncEvent;
+uint32 pwm_test=760;
 
 int core0_main(void)
 {
@@ -51,18 +54,38 @@ int core0_main(void)
      */
     IfxScuWdt_disableCpuWatchdog(IfxScuWdt_getCpuWatchdogPassword());
     IfxScuWdt_disableSafetyWatchdog(IfxScuWdt_getSafetyWatchdogPassword());
-    
+    //初始化外设
+    //OLED初始化
+    //SmartCar_Oled_Init();
+    //GPIO初始化
+    GPIO_Init(P20,9, PUSHPULL,1);
+    GPIO_Init(P21,4, PUSHPULL,1);
+    GPIO_Init(P21,5, PUSHPULL,1);
+    //PWM初始化
+    SmartCar_Gtm_Pwm_Init(&IfxGtm_ATOM0_7_TOUT64_P20_8_OUT, 50, 760);
+    //pit初始化
+    Pit_Init_ms(CCU6_0, PIT_CH0, 50);
     /* Wait for CPU sync event */
     IfxCpu_emitEvent(&g_cpuSyncEvent);
     IfxCpu_waitEvent(&g_cpuSyncEvent, 1);
-    
     IfxCpu_enableInterrupts();
-    //初始化外设
+
 
     while(TRUE)
     {
 
     }
+
 }
+IFX_INTERRUPT(cc60_pit_ch0_isr, 0, CCU6_0_CH0_ISR_PRIORITY)
+{
+    enableInterrupts();//开启中断嵌套
+    pwm_test=pwm_test-400;
+    if(pwm_test<400){pwm_test=9000;}
+    SmartCar_Gtm_Pwm_Setduty(&IfxGtm_ATOM0_7_TOUT64_P20_8_OUT, pwm_test);
+    PIT_CLEAR_FLAG(CCU6_0, PIT_CH0);
+
+}
+
 
 #pragma section all restore

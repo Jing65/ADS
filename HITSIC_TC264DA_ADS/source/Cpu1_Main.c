@@ -27,6 +27,7 @@
 #include "Ifx_Types.h"
 #include "IfxCpu.h"
 #include "IfxScuWdt.h"
+#include "menu.h"
 
 extern IfxCpu_syncEvent g_cpuSyncEvent;
 
@@ -42,9 +43,19 @@ int core1_main(void)
     /* Wait for CPU sync event */
     IfxCpu_emitEvent(&g_cpuSyncEvent);
     IfxCpu_waitEvent(&g_cpuSyncEvent, 1);
-    
+    //OLED初始化
+    SmartCar_Oled_Init();
+    //GPIO初始化
+    GPIO_Init(P22,0, NO_PULL,0);
+    GPIO_Init(P22,1, NO_PULL,0);
+    GPIO_Init(P22,2, NO_PULL,0);
+    GPIO_Init(P22,3, NO_PULL,0);
+
+    Read_flash();
+
     while(1)
     {
+       Menu_control();
     }
     return (1);
 }

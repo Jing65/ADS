@@ -147,12 +147,6 @@ void Pit_Enable_Interrupt(CCU6N_enum ccu6n, CCU6_CHN_enum pit_ch)
 
 
 //PIT中断函数  示例
-IFX_INTERRUPT(cc60_pit_ch0_isr, 0, CCU6_0_CH0_ISR_PRIORITY)
-{
-    enableInterrupts();//开启中断嵌套
-    PIT_CLEAR_FLAG(CCU6_0, PIT_CH0);
-
-}
 
 
 IFX_INTERRUPT(cc60_pit_ch1_isr, 0, CCU6_0_CH1_ISR_PRIORITY)
