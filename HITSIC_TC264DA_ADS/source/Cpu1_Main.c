@@ -44,18 +44,20 @@ int core1_main(void)
     IfxCpu_emitEvent(&g_cpuSyncEvent);
     IfxCpu_waitEvent(&g_cpuSyncEvent, 1);
     //OLED初始化
-    SmartCar_Oled_Init();
-    //GPIO初始化
-    GPIO_Init(P22,0, NO_PULL,0);
-    GPIO_Init(P22,1, NO_PULL,0);
-    GPIO_Init(P22,2, NO_PULL,0);
-    GPIO_Init(P22,3, NO_PULL,0);
+//    SmartCar_Oled_Init();
+//    //GPIO初始化
+//    GPIO_Init(P22,0, NO_PULL,0);
+//    GPIO_Init(P22,1, NO_PULL,0);
+//    GPIO_Init(P22,2, NO_PULL,0);
+//    GPIO_Init(P22,3, NO_PULL,0);
 
-    Read_flash();
+//    Read_flash();
+
 
     while(1)
     {
-       Menu_control();
+//       Menu_control();
+
     }
     return (1);
 }

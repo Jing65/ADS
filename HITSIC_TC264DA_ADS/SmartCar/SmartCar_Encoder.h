@@ -22,6 +22,7 @@
 #define SMARTCAR_ENCODER_H
 
 #include "IfxGpt12_IncrEnc.h"
+#include "common.h"
 
 typedef enum
 {
