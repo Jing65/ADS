@@ -35,30 +35,116 @@
 #include "SmartCar_MPU.h"
 #include "SmartCar_MT9V034.h"
 #include "SmartCar_Systick.h"
+#include "SmartCar_PIT.h"
+#include "SmartCar_Encoder.h"
+#include "SmartCar_ADC.h"
 #include "common.h"
+#include "control.h"
+#include "SmartCar_Eru.h"
+#include "SmartCar_GPIO.h"
+#include "SmartCar_Assert.h"
+#include "IfxCcu6_Timer.h"
+#include "SysSe/Bsp/Bsp.h"
+#include "SmartCar_GPIO.h"
 
 
 #pragma section all "cpu0_dsram"
 //IfxCpu_syncEvent g_cpuSyncEvent;
 
+void elec_init(void)//ADC初始化
+{
+    ADC_Init(ADC_0, ADC0_CH0_A0);
+    ADC_Init(ADC_0, ADC0_CH1_A1);
+    ADC_Init(ADC_0, ADC0_CH2_A2);
+    ADC_Init(ADC_0, ADC0_CH3_A3);
+    ADC_Init(ADC_0, ADC0_CH4_A4);
+    ADC_Init(ADC_0, ADC0_CH5_A5);
+    ADC_Init(ADC_0, ADC0_CH6_A6);
+}
+
+//uint8 ai_data_flag;//1：ad数据采集完成   0：ad数据未采集完成
+//int8 ad_data[7];   //ad数据
+
+//void ai_data(void)//采集adc数据
+//{
+//    ad_data[0] = (int16)ADC_Get(ADC_0, ADC0_CH0_A0, ADC_8BIT) - 128;
+//    ad_data[1] = (int16)ADC_Get(ADC_0, ADC0_CH1_A1, ADC_8BIT) - 128;
+//    ad_data[2] = (int16)ADC_Get(ADC_0, ADC0_CH2_A2, ADC_8BIT) - 128;
+//    ad_data[3] = (int16)ADC_Get(ADC_0, ADC0_CH3_A3, ADC_8BIT) - 128;
+//    ad_data[4] = (int16)ADC_Get(ADC_0, ADC0_CH4_A4, ADC_8BIT) - 128;
+//    ad_data[5] = (int16)ADC_Get(ADC_0, ADC0_CH5_A5, ADC_8BIT) - 128;
+//    ad_data[6] = (int16)ADC_Get(ADC_0, ADC0_CH6_A6, ADC_8BIT) - 128;
+//    ai_data_flag = 1;
+//}
+
+void Servo_init(void)
+{
+    SmartCar_Gtm_Pwm_Init(&Servo_PIN, 50, servo_mid);
+}
+
+
+void Motor_init(void)
+{
+    SmartCar_Gtm_Pwm_Init(&Motor_PIN_0, 50, 0);
+    SmartCar_Gtm_Pwm_Init(&Motor_PIN_1, 50, 0);
+}
+
+
+void PIT_init(void)
+{
+    Pit_Init_ms(CCU6_0, PIT_CH0, 5);//电机中断初始化
+    Pit_Init_ms(CCU6_0, PIT_CH1, 20);//舵机中断初始化
+}
+
+void Encoder_init(void)
+{
+    SmartCar_Encoder_Init(GPT12_T2, IfxGpt120_T2INB_P33_7_IN, IfxGpt120_T2EUDB_P33_6_IN);
+}
+
+void Eru_init(void)//外部中断初始化
+{
+    Eru_Init(CH0_P15_4, RISING);//发车启动中断
+}
+
+void Uart_init(void)
+{
+    SmartCar_Uart_Init(IfxAsclin0_TX_P14_0_OUT,IfxAsclin0_RXA_P14_1_IN,115200,0);
+}
+
 int core0_main(void)
 {
     IfxCpu_disableInterrupts();
     
-    get_clk();
+    get_clk();//获取时钟频率  务必保留
+    //用户在此处调用各种初始化函数等
+    elec_init();//ADC初始化
+    Servo_init();//舵机初始化
+    Motor_init();//电机初始化
+    PIT_init();//中断初始化
+    Encoder_init();//编码器初始化
+    Eru_init();
+    Uart_init();
+
     /* !!WATCHDOG0 AND SAFETY WATCHDOG ARE DISABLED HERE!!
      * Enable the watchdogs and service them periodically if it is required
      */
     IfxScuWdt_disableCpuWatchdog(IfxScuWdt_getCpuWatchdogPassword());
     IfxScuWdt_disableSafetyWatchdog(IfxScuWdt_getSafetyWatchdogPassword());
     
-    /* Wait for CPU sync event */
+    /* Wait for CPU sync event */    //等待所有核心初始化完毕
     IfxCpu_emitEvent(&g_cpuSyncEvent);
     IfxCpu_waitEvent(&g_cpuSyncEvent, 1);
-    
-    IfxCpu_enableInterrupts();
-    //初始化外设
+    enableInterrupts();
+    //初始化外设？？？（孙唯在前面进行了初始化）
 
+
+
+    //PIT中断使能
+    Pit_Enable_Interrupt(CCU6_0, PIT_CH0);
+    Pit_Enable_Interrupt(CCU6_0, PIT_CH1);
+
+    //ERU中断使能
+    Eru_Enable(CH0_P15_4);//发车启动中断
     while(TRUE)
     {
 

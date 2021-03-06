@@ -38,5 +38,4 @@ typedef struct
 IFX_EXTERN App_Cpu0 g_AppCpu0;
 
 
-
 #endif /* SOURCE_CPU0_MAIN_H_ */
