@@ -15,7 +15,7 @@ void MenuItem_Insert(MenuItem_t* Menu, MenuItem_t* pItem)
         Menu->Child_list = pItem;
         pItem->list_ID = 1;
         pItem->Pre_item = Menu;
-        Menu->Item_data->dataint = 1;
+//        Menu->Item_data->dataint = 1;
     }
     else
     {
