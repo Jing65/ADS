@@ -66,7 +66,7 @@ int core0_main(void)
     GPIO_Init(P21,4, PUSHPULL,0);
     GPIO_Init(P21,5, PUSHPULL,0);
     //PWM初始化
-    SmartCar_Gtm_Pwm_Init(&IfxGtm_ATOM0_7_TOUT64_P20_8_OUT, 50, 760);
+//    SmartCar_Gtm_Pwm_Init(&IfxGtm_ATOM0_7_TOUT64_P20_8_OUT, 50, 760);
     //pit初始化
 //    Pit_Init_ms(CCU6_0, PIT_CH0, 50);
     /* Wait for CPU sync event */

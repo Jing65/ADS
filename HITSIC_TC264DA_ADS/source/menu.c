@@ -15,7 +15,7 @@ void MenuItem_Insert(MenuItem_t* Menu, MenuItem_t* pItem)
         Menu->Child_list = pItem;
         pItem->list_ID = 1;
         pItem->Pre_item = Menu;
-//        Menu->Item_data->dataint = 1;
+        Menu->Item_data->dataint = 1;
     }
     else
     {
@@ -26,7 +26,7 @@ void MenuItem_Insert(MenuItem_t* Menu, MenuItem_t* pItem)
         }
         pctrl->Next_item = pItem;
         pItem->Pre_item = pctrl;
-        pItem->list_ID = pctrl->list_ID + 1;
+        pItem->list_ID   = pctrl->list_ID + 1;
         Menu->Item_data->dataint++;
     }
 }
@@ -53,8 +53,8 @@ MenuItem_t *ItemCreate(char* Item_name, itemType Item_Type, int32 data_min, int3
     {
         pItem->Item_data = &CAR[Item_ID-1].datafloat;
     }
-
-    pItem->list_ID = 0;         //主菜单头节点是0
+    //主菜单头节点是0
+    pItem->list_ID = 0;
     pItem->Pre_item = NULL;
     pItem->Next_item = NULL;
     pItem->Child_list = NULL;
@@ -80,7 +80,7 @@ void MenuPrint(MenuItem_t *Menu, MenuItem_t *currItem)  //再加一项当前指针
     SmartCar_OLED_Fill(0);
     uint8 x = 0;
     uint8 y = 2;   //菜单项在y = 2开始
-    SmartCar_OLED_Printf6x8(0, 0,"%s  %d/%d", Menu->Item_name, currItem->list_ID, Menu->Item_data->dataint);
+    SmartCar_OLED_Printf6x8(0, 0,"%s", Menu->Item_name);
     SmartCar_OLED_P6x8Str(0, 1,"---------------------");
     uint8 start_print_ID;
     MenuItem_t *pctrl = Menu->Child_list;
