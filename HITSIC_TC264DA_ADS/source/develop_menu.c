@@ -184,7 +184,7 @@ key GetKey(void)
     key key_oper = undo;
     if(!GPIO_Read(P22,0)||!GPIO_Read(P22,1)||!GPIO_Read(P22,2)||!GPIO_Read(P22,3))
     {
-        Delay_ms(STM0,150);
+        Delay_ms(STM0,100);
         if(!GPIO_Read(P22,2)&&(!GPIO_Read(P22,3)))
         {
             key_oper = ok_o;
@@ -250,7 +250,7 @@ void KeyOperation(key Key)
             else if(CurItem == HOLD)
             {
                 GPIO_Set(P20,9, 0);
-                Delay_ms(STM0, 150);
+                Delay_ms(STM0, 100);
                 GPIO_Set(P20,9, 1);
 //                iap_erase_page(0x01);
 //                iap_write_bytes(0x01, &CAR[0], PARA_MAX * sizeof(cardata));                            //保存修改的参量

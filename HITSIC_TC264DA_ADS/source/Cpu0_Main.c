@@ -31,7 +31,6 @@
 #include "SmartCar_Uart.h"
 #include "SmartCar_Upload.h"
 #include "SmartCar_Oled.h"
-#include "SmartCar_Pwm.h"
 #include "SmartCar_MPU.h"
 #include "SmartCar_MT9V034.h"
 #include "SmartCar_Systick.h"
@@ -39,7 +38,8 @@
 #include "develop_menu.h"
 #include "SmartCar_PIT.h"
 #include "SmartCar_Eru.h"
-
+#include "Init.h"
+#include "long_adc.h"
 
 #pragma section all "cpu0_dsram"
 //IfxCpu_syncEvent g_cpuSyncEvent;
@@ -59,13 +59,28 @@ int core0_main(void)
     IfxCpu_emitEvent(&g_cpuSyncEvent);
     IfxCpu_waitEvent(&g_cpuSyncEvent, 1);
     //初始化外设
+    //屏幕初始化
     SmartCar_Oled_Init();
+    //GPIO初始化，20.9保存flash提示灯
     GPIO_Init(P20,9, PUSHPULL,1);
+    //PWM初始化
+    PWM_init();
+    //定时中断初始化
+    PIT_init();
+    //编码器初始化
+    Encoder_init();
+    //外部中断初始化
+    Eru_init();
+    //串口初始化
+    Uart_init();
+    //创建菜单并完成参量菜单项的赋值
+    CreatMenu();
+    //给状态菜单项赋值
+    //MenuInit();
+    PrintMenu();
 
     IfxCpu_enableInterrupts();
-    CreatMenu();            //创建菜单并完成参量菜单项的赋值
-//    MenuInit();             //给状态菜单项赋值
-    PrintMenu();
+
 
     while(TRUE)
     {
@@ -73,7 +88,40 @@ int core0_main(void)
         KeyOperation(get_key);
         if(get_key!=undo)
         PrintMenu();
+//        Elec_process();
     }
 }
 
+//PIT中断函数  示例
+IFX_INTERRUPT(cc60_pit_ch0_isr, 0, CCU6_0_CH0_ISR_PRIORITY)
+{
+    enableInterrupts();//开启中断嵌套
+    //按键检测函数
+    PIT_CLEAR_FLAG(CCU6_0, PIT_CH0);
+
+}
+
+
+IFX_INTERRUPT(cc60_pit_ch1_isr, 0, CCU6_0_CH1_ISR_PRIORITY)
+{
+    enableInterrupts();//开启中断嵌套
+    PIT_CLEAR_FLAG(CCU6_0, PIT_CH1);
+
+}
+
+IFX_INTERRUPT(cc61_pit_ch0_isr, 0, CCU6_1_CH0_ISR_PRIORITY)
+{
+    enableInterrupts();//开启中断嵌套
+    Moto_Speed();
+    PIT_CLEAR_FLAG(CCU6_1, PIT_CH0);
+
+}
+
+IFX_INTERRUPT(cc61_pit_ch1_isr, 0, CCU6_1_CH1_ISR_PRIORITY)
+{
+    enableInterrupts();//开启中断嵌套
+    Servo_Elec();
+    PIT_CLEAR_FLAG(CCU6_1, PIT_CH1);
+
+}
 #pragma section all restore

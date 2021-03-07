@@ -23,7 +23,6 @@
 
 #include "IfxGpt12_IncrEnc.h"
 
-typedef short int16;
 typedef enum
 {
     GPT12_T2 = 0,
