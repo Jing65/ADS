@@ -15,7 +15,7 @@ item Item[ITEM_MAX];  //菜单项结构体数组
 cardata CAR[PARA_MAX];
 
 
-item CreatItem(itemtype type, char* name, int32 min, int32 max)
+item CreatItem(itemtype type, char* name, int16 min, int16 max)
 {
     item Item;
     Item.item_type = type;
@@ -185,19 +185,23 @@ key GetKey(void)
     if(!GPIO_Read(P22,0)||!GPIO_Read(P22,1)||!GPIO_Read(P22,2)||!GPIO_Read(P22,3))
     {
         Delay_ms(STM0,150);
-        if(!GPIO_Read(P22,0))
+        if(!GPIO_Read(P22,2)&&(!GPIO_Read(P22,3)))
+        {
+            key_oper = ok_o;
+        }
+        else if(!GPIO_Read(P22,0))
         {
             key_oper = up_o;
         }
-        if(!GPIO_Read(P22,1))
+        else if(!GPIO_Read(P22,1))
         {
             key_oper = down_o;
         }
-        if(!GPIO_Read(P22,2))
+        else if(!GPIO_Read(P22,2))
         {
             key_oper = left_o;
         }
-        if(!GPIO_Read(P22,3))
+        else if(!GPIO_Read(P22,3))
         {
             key_oper = right_o;
         }
@@ -264,12 +268,108 @@ void KeyOperation(key Key)
     }
 }
 
-void ModifyintData(void);
+void ModifyintData(void)
 {
+    int16 multiply=100;
+    int16 now_num=Item[CurItem].item_data.intData;
+    int16 max=Item[CurItem].data_max;
+    int16 min=Item[CurItem].data_min;
+    while(TRUE)                                                    //参量界面下的按键操作
+        {
+           key g_key=GetKey();
+           switch (g_key)
+           {
+               case up_o:
+                   now_num = now_num + multiply;
+                   if( now_num>max)
+                       now_num=max;
+                   break;
+               case down_o:
+                   now_num = now_num - multiply;
+                   if( now_num<min)
+                       now_num=min;
+                   break;
+               case left_o:
+                    multiply= multiply/10;
+                    if(multiply<1)
+                       multiply=100;
+                   break;
+               case ok_o:
+                   Item[CurItem].item_data.intData = now_num;
+                   break;
+               case undo:
+                   break;
+               default:
+                   break;
+           }
+          if(g_key!=undo)
+          PrintintData(multiply,now_num);
+          if (g_key==ok_o)
+          break;
+        }
+
+}
+
+void ModifyfloatData(void)
+{
+    float multiply=10;
+    float now_num=Item[CurItem].item_data.floatData;
+    float max=(float)Item[CurItem].data_max;
+    float min=(float)Item[CurItem].data_min;
+    while(TRUE)                                                    //参量界面下的按键操作
+        {
+           key g_key=GetKey();
+           switch (g_key)
+           {
+               case up_o:
+                   now_num = now_num + multiply;
+                   if( now_num>max)
+                       now_num=max;
+                   break;
+               case down_o:
+                   now_num = now_num - multiply;
+                   if( now_num<min)
+                       now_num=min;
+                   break;
+               case left_o:
+                    multiply= multiply/10;
+                    if(multiply<0.001)
+                       multiply=10;
+                   break;
+               case ok_o:
+                   Item[CurItem].item_data.floatData = now_num;
+                   break;
+               case undo:
+                   break;
+               default:
+                   break;
+           }
+          if(g_key!=undo)
+          PrintfloatData(multiply,now_num);
+          if (g_key==ok_o)
+          break;
+
+        }
 
 }
 
 
+void PrintintData(int mul,int now_)
+{
+    SmartCar_OLED_Fill(0);                                            //清屏
+    SmartCar_OLED_P6x8Str(0, 0, Item[CurItem].item_name);
+    SmartCar_OLED_P6x8Str(0, 1, "----------------------");
+    SmartCar_OLED_Printf6x8(0, 3,"%d",now_);
+    SmartCar_OLED_Printf6x8(10, 5,"%d", mul);
+}
 
+void PrintfloatData(float mul,float now_)
+{
+    SmartCar_OLED_Fill(0);                                            //清屏
+    SmartCar_OLED_P6x8Str(0, 0, Item[CurItem].item_name);
+    SmartCar_OLED_P6x8Str(0, 1, "----------------------");
+    SmartCar_OLED_Printf6x8(0, 3,"%.4f",now_);
+    SmartCar_OLED_Printf6x8(10, 5,"%.4f", mul);
+}
 
 

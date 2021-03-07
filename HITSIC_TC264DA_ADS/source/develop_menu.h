@@ -55,6 +55,7 @@ enum ITEMTYPE    //菜单项的类型
     paraF_item,    //浮点型参量类型
     stateF_item,   //浮点型状态量类型
     order_item,    //指令类型，如：Hold保存数据
+    read_only,
 };
 typedef enum ITEMTYPE itemtype;
 
@@ -77,8 +78,8 @@ struct ITEM
     itemtype item_type;    //菜单项类型,枚举型变量
     char item_name[NAME_MAX];  //菜单项的名字
     cardata item_data;     //菜单项的数据，参量型的可修改，状态型的不可修改
-    int32 data_max;        //菜单项数据的最大值
-    int32 data_min;        //菜单项数据的最小值
+    int16 data_max;        //菜单项数据的最大值
+    int16 data_min;        //菜单项数据的最小值
 };
 typedef struct ITEM item;
 
@@ -86,7 +87,7 @@ extern item Item[ITEM_MAX];
 extern cardata CAR[PARA_MAX];
 
 
-item CreatItem(itemtype type, char* name, int32 min, int32 max);
+item CreatItem(itemtype type, char* name, int16 min, int16 max);
 void InsertItem(item* Item, uint16 root, uint16 item_t);
 void CreatMenu(void);
 void MenuInit(void);
@@ -94,6 +95,10 @@ void DataUpdate(void);
 void PrintMenu(void);
 key GetKey(void);
 void KeyOperation(key Key);
+void ModifyintData(void);
+void ModifyfloatData(void);
+void PrintintData(int mul,int now_);
+void PrintfloatData(float mul,float now_);
 
 
 
