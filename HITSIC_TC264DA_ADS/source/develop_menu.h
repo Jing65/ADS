@@ -1,0 +1,104 @@
+/*
+ * develop_menu.h
+ *
+ *  Created on: 2021年3月7日
+ *      Author: HP
+ */
+
+#ifndef SOURCE_DEVELOP_MENU_H_
+#define SOURCE_DEVELOP_MENU_H_
+
+#include "common.h"
+#include "SmartCar_Oled.h"
+#include "SmartCar_Systick.h"
+#include "SmartCar_GPIO.h"
+
+
+#define NAME_MAX 20//菜单项名字长度的极限
+#define ITEM_MAX 40//菜单项数目的极限
+#define PARA_MAX 30//参量型菜单项数目的极限
+
+
+extern uint16 ItemNum;
+extern uint16 ParaNum;
+extern uint16 OrderNum;
+extern uint16 CurItem;
+extern uint16 CurMenu;
+
+
+enum ITEMID//注意和ID一一对应***顺序不能搞错***
+{
+    MENU = 0,
+    MODE = 1, POSITION, PID_K, SPEED, DIR, HOLD,
+    GYRO_X, GYRO_Y, GYRO_Z, ACC_X, ACC_Y, ACC_Z,
+    ANGLE_SET, ANGLE_CUR, ANGLE_KP, ANGLE_KI, ANGLE_KD, ANGLE_OUT,
+    SPEED_SET, SPEED_CUR, SPEED_KP, SPEED_KI, SPEED_KD, SPEED_MOTOR,
+    DIR_KP, DIR_KI, DIR_KD, DIR_MID, DIR_OUT,
+};
+
+enum KEY   //按键操作的类型
+{
+    up_o = 1,  //4.0
+    down_o,    //4.1
+    left_o,    //4.2
+    right_o,   //4.3
+    ok_o,      //同时按下4.2和4.3
+    undo,    //不按
+};
+typedef enum KEY key;
+
+enum ITEMTYPE    //菜单项的类型
+{
+    list_item = 1, //菜单类型（含有子菜单项）
+    paraI_item,    //整型参量类型（人为设定，可以修改，如:angle_kp
+    stateI_item,   //整型状态量类型（传感器示数，或计算结果，不可修改，如：angle_cur
+    paraF_item,    //浮点型参量类型
+    stateF_item,   //浮点型状态量类型
+    order_item,    //指令类型，如：Hold保存数据
+};
+typedef enum ITEMTYPE itemtype;
+
+struct CARDATA   //存储数据的变量，存储菜单项数据以及小车数据
+{
+    int16 intData;
+    float floatData;
+};
+typedef struct CARDATA cardata;
+
+struct ITEM
+{
+    uint16 ID;             //处于所有菜单项中的序号
+    uint16 root_ID;        //所处菜单在所有菜单项中的序号
+    uint16 child_ID;       //如果是菜单型菜单项，child_ID表示它的第一个菜单项的ID
+    uint16 list_ID;        //处于所处菜单中的序号
+    uint16 para_ID;        //如果是参量型菜单项，则有参量序号，否则为0
+    uint16 order_ID;       //如果是指令型菜单项，则有指令序号，否则为0
+    uint16 list_num;       //如果是菜单型菜单项，list_num表示它含有的菜单项数目
+    itemtype item_type;    //菜单项类型,枚举型变量
+    char item_name[NAME_MAX];  //菜单项的名字
+    cardata item_data;     //菜单项的数据，参量型的可修改，状态型的不可修改
+    int32 data_max;        //菜单项数据的最大值
+    int32 data_min;        //菜单项数据的最小值
+};
+typedef struct ITEM item;
+
+extern item Item[ITEM_MAX];
+extern cardata CAR[PARA_MAX];
+
+
+item CreatItem(itemtype type, char* name, int32 min, int32 max);
+void InsertItem(item* Item, uint16 root, uint16 item_t);
+void CreatMenu(void);
+void MenuInit(void);
+void DataUpdate(void);
+void PrintMenu(void);
+key GetKey(void);
+void KeyOperation(key Key);
+
+
+
+
+
+
+
+#endif /* SOURCE_DEVELOP_MENU_H_ */

@@ -36,6 +36,9 @@
 #include "SmartCar_MT9V034.h"
 #include "SmartCar_Systick.h"
 #include "common.h"
+#include "develop_menu.h"
+#include "SmartCar_PIT.h"
+#include "SmartCar_Eru.h"
 
 
 #pragma section all "cpu0_dsram"
@@ -55,13 +58,21 @@ int core0_main(void)
     /* Wait for CPU sync event */
     IfxCpu_emitEvent(&g_cpuSyncEvent);
     IfxCpu_waitEvent(&g_cpuSyncEvent, 1);
-    
-    IfxCpu_enableInterrupts();
     //初始化外设
+    SmartCar_Oled_Init();
+    GPIO_Init(P20,9, PUSHPULL,1);
+
+    IfxCpu_enableInterrupts();
+    CreatMenu();            //创建菜单并完成参量菜单项的赋值
+//    MenuInit();             //给状态菜单项赋值
+    PrintMenu();
 
     while(TRUE)
     {
-
+        key get_key=GetKey();
+        KeyOperation(get_key);
+        if(get_key!=undo)
+        PrintMenu();
     }
 }
 
