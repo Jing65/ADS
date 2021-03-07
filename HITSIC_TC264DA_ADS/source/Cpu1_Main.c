@@ -27,7 +27,7 @@
 #include "Ifx_Types.h"
 #include "IfxCpu.h"
 #include "IfxScuWdt.h"
-
+#include "develop_menu.h"
 extern IfxCpu_syncEvent g_cpuSyncEvent;
 
 int core1_main(void)
@@ -45,6 +45,7 @@ int core1_main(void)
     
     while(1)
     {
+
     }
     return (1);
 }
