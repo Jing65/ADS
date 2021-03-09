@@ -26,14 +26,12 @@ extern uint16 CurItem;
 extern uint16 CurMenu;
 
 
+//用于测试版本（单纯测试电机好不好用）
 enum ITEMID//注意和ID一一对应***顺序不能搞错***
 {
     MENU = 0,
-    MODE = 1, POSITION, PID_K, SPEED, DIR, HOLD,
-    GYRO_X, GYRO_Y, GYRO_Z, ACC_X, ACC_Y, ACC_Z,
-    ANGLE_SET, ANGLE_CUR, ANGLE_KP, ANGLE_KI, ANGLE_KD, ANGLE_OUT,
-    SPEED_SET, SPEED_CUR, SPEED_KP, SPEED_KI, SPEED_KD, SPEED_MOTOR,
-    DIR_KP, DIR_KI, DIR_KD, DIR_MID, DIR_OUT,
+    MOTO = 1, SERVO, AD_s, AD_l, HOLD,
+    PWM_MOTO,
 };
 
 enum KEY   //按键操作的类型
@@ -59,12 +57,12 @@ enum ITEMTYPE    //菜单项的类型
 };
 typedef enum ITEMTYPE itemtype;
 
-struct CARDATA   //存储数据的变量，存储菜单项数据以及小车数据
+union CARDATA   //存储数据的变量，存储菜单项数据以及小车数据
 {
     int16 intData;
     float floatData;
 };
-typedef struct CARDATA cardata;
+typedef union CARDATA cardata;
 
 struct ITEM
 {

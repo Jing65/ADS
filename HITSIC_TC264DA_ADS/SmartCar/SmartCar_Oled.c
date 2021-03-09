@@ -20,6 +20,7 @@
 
 
 #include "SmartCar_Oled.h"
+#include "SmartCar_Systick.h"
 
 IfxQspi_SpiMaster oled_spi;
 IfxQspi_SpiMaster_Channel oled_spiChannel;
@@ -80,17 +81,46 @@ void SmartCar_Oled_Config_Init()
     IfxPort_setPinHigh(&OLED_DC_PIN_MODULE, OLED_DC_PIN_NUM);
     /*引脚res,dc初始化结束*/
 }
+void SmartCar_Oled_Imit_Pininit(void)
+{
+    IfxPort_setPinMode(&OLED_SCL_MODULE, OLED_SCL_NUM,  IfxPort_Mode_outputPushPullGeneral);//res,推挽式输出,初始化为高电平
+    IfxPort_setPinPadDriver(&OLED_SCL_MODULE, OLED_SCL_NUM, IfxPort_PadDriver_cmosAutomotiveSpeed1);
+    IfxPort_setPinHigh(&OLED_SCL_MODULE, OLED_SCL_NUM);
+
+    IfxPort_setPinMode(&OLED_SDA_MODULE, OLED_SDA_NUM,  IfxPort_Mode_outputPushPullGeneral);//res,推挽式输出,初始化为高电平
+    IfxPort_setPinPadDriver(&OLED_SDA_MODULE, OLED_SDA_NUM, IfxPort_PadDriver_cmosAutomotiveSpeed1);
+    IfxPort_setPinLow(&OLED_SDA_MODULE, OLED_SDA_NUM);
+
+    IfxPort_setPinMode(&OLED_RST_MODULE, OLED_RST_NUM,  IfxPort_Mode_outputPushPullGeneral);//res,推挽式输出,初始化为高电平
+    IfxPort_setPinPadDriver(&OLED_RST_MODULE, OLED_RST_NUM, IfxPort_PadDriver_cmosAutomotiveSpeed1);
+    IfxPort_setPinHigh(&OLED_RST_MODULE, OLED_RST_NUM);
+
+    IfxPort_setPinMode(&OLED_DC_MODULE, OLED_DC_NUM,  IfxPort_Mode_outputPushPullGeneral);//res,推挽式输出,初始化为高电平
+    IfxPort_setPinPadDriver(&OLED_DC_MODULE, OLED_DC_NUM, IfxPort_PadDriver_cmosAutomotiveSpeed1);
+    IfxPort_setPinHigh(&OLED_DC_MODULE, OLED_DC_NUM);
+
+    IfxPort_setPinMode(&OLED_CS_MODULE, OLED_CS_NUM,  IfxPort_Mode_outputPushPullGeneral);//res,推挽式输出,初始化为高电平
+    IfxPort_setPinPadDriver(&OLED_CS_MODULE, OLED_CS_NUM, IfxPort_PadDriver_cmosAutomotiveSpeed1);
+    IfxPort_setPinHigh(&OLED_CS_MODULE, OLED_CS_NUM);
+
+    IfxPort_setPinHigh(&OLED_SCL_MODULE, OLED_SCL_NUM);
+    IfxPort_setPinLow(&OLED_RST_MODULE, OLED_RST_NUM);
+    Delay_ms(STM0, 50);
+    IfxPort_setPinHigh(&OLED_RST_MODULE, OLED_RST_NUM);
+}
 
 void SmartCar_Oled_Init(void)
 {
+    SmartCar_Oled_Imit_Pininit();//软件spi引脚初始化
+    /*SmartCar_Oled_Config_Init();//硬件spi初始化
     int i =50;
-    SmartCar_Oled_Config_Init();
     IfxPort_setPinHigh(&OLED_RES_PIN_MODULE, OLED_RES_PIN_NUM);
     while(i--){};
     IfxPort_setPinLow(&OLED_RES_PIN_MODULE, OLED_RES_PIN_NUM);
     i = 50;
     while(i--){};
-    IfxPort_setPinHigh(&OLED_RES_PIN_MODULE, OLED_RES_PIN_NUM);
+    IfxPort_setPinHigh(&OLED_RES_PIN_MODULE, OLED_RES_PIN_NUM);//硬件spi初始化*/
+
     OLED_WrtCmd(0xae); //--turn off oled panel
     OLED_WrtCmd(0x00); //---set low column address
     OLED_WrtCmd(0x10); //---set high column address
@@ -126,7 +156,53 @@ void SmartCar_Oled_Init(void)
     OLED_Set_Pos(0,0);
 }
 
-void OLED_WrtCmd(uint8 cmd)
+void OLED_Imit_WtrData(uint8 data)
+{
+    uint8 i = 8;
+    IfxPort_setPinLow(&OLED_CS_MODULE, OLED_CS_NUM);
+    IfxPort_setPinHigh(&OLED_DC_MODULE, OLED_DC_NUM);
+    IfxPort_setPinLow(&OLED_SCL_MODULE, OLED_SCL_NUM);
+    while(i--)//高位在前
+    {
+        if(data & 0x80)//1
+        {
+            IfxPort_setPinHigh(&OLED_SDA_MODULE, OLED_SDA_NUM);
+        }
+        else//0
+        {
+            IfxPort_setPinLow(&OLED_SDA_MODULE, OLED_SDA_NUM);
+        }
+        IfxPort_setPinHigh(&OLED_SCL_MODULE, OLED_SCL_NUM);//数据发送
+        IfxPort_setPinLow(&OLED_SCL_MODULE, OLED_SCL_NUM);
+        data <<= 1;
+    }
+    IfxPort_setPinHigh(&OLED_CS_MODULE, OLED_CS_NUM);
+}
+
+void OLED_Imit_WrtCmd(uint8 cmd)
+{
+    uint8 i = 8;
+    IfxPort_setPinLow(&OLED_CS_MODULE, OLED_CS_NUM);
+    IfxPort_setPinLow(&OLED_DC_MODULE, OLED_DC_NUM);
+    IfxPort_setPinLow(&OLED_SCL_MODULE, OLED_SCL_NUM);
+    while(i--)//高位在前
+    {
+        if(cmd & 0x80)//1
+        {
+            IfxPort_setPinHigh(&OLED_SDA_MODULE, OLED_SDA_NUM);
+        }
+        else//0
+        {
+            IfxPort_setPinLow(&OLED_SDA_MODULE, OLED_SDA_NUM);
+        }
+        IfxPort_setPinHigh(&OLED_SCL_MODULE, OLED_SCL_NUM);//数据发送
+        IfxPort_setPinLow(&OLED_SCL_MODULE, OLED_SCL_NUM);
+        cmd <<= 1;
+    }
+    IfxPort_setPinHigh(&OLED_CS_MODULE, OLED_CS_NUM);
+}
+
+void OLED_QSPI_WrtCmd(uint8 cmd)
 {
     int i =0;
     spiTxBuffer[i] = cmd;
@@ -135,13 +211,24 @@ void OLED_WrtCmd(uint8 cmd)
     IfxQspi_SpiMaster_exchange(&oled_spiChannel, &spiTxBuffer[i], NULL_PTR, 1U);
 }
 
-void OLED_WrtData(uint8 data)
+void OLED_QSPI_WrtData(uint8 data)
 {
     int i =0;
     spiTxBuffer[i] = data;
     while( IfxQspi_SpiMaster_getStatus(&oled_spiChannel) == SpiIf_Status_busy );
     IfxPort_setPinHigh(&OLED_DC_PIN_MODULE, OLED_DC_PIN_NUM);
     IfxQspi_SpiMaster_exchange(&oled_spiChannel, &spiTxBuffer[i], NULL_PTR, 1U);
+}
+
+void OLED_WrtCmd(uint8 cmd)
+{
+    //OLED_QSPI_WrtCmd(cmd);
+    OLED_Imit_WrtCmd(cmd);
+}
+void OLED_WrtData(uint8 data)
+{
+    //OLED_QSPI_WrtData(data);
+    OLED_Imit_WtrData(data);
 }
 
 void SmartCar_OLED_Fill(uint8 bmp_data)

@@ -44,7 +44,7 @@ void PIT_init(void)
 {
     Pit_Init_ms(CCU6_1, PIT_CH0, 5);//电机中断初始化
     Pit_Init_ms(CCU6_1, PIT_CH1, 20);//舵机中断初始化，中断优先级最低
-    Pit_Init_us(CCU6_0, PIT_CH0, 100);//按键检测中断初始化，中断优先级最低
+//    Pit_Init_us(CCU6_0, PIT_CH0, 100);//按键检测中断初始化，中断优先级最低
 }
 
 void Encoder_init(void)
@@ -54,12 +54,12 @@ void Encoder_init(void)
 
 void Eru_init(void)//外部中断初始化
 {
-    Eru_Init(CH0_P15_4, RISING);//发车启动中断
+    Eru_Init(CH6_P20_0, RISING);//发车启动中断
 }
 
 void Uart_init(void)
 {
-    SmartCar_Uart_Init(IfxAsclin0_TX_P14_0_OUT,IfxAsclin0_RXA_P14_1_IN,115200,0);
+    SmartCar_Uart_Init(IfxAsclin0_TX_P15_2_OUT,IfxAsclin0_RXB_P15_3_IN,115200,0);
 }
 
 

@@ -34,23 +34,40 @@
 #define IFX_INTPRIO_DMA_CH2  29
 
 //与oled初始化有关
-#define OLED_QSPI_MODULE    MODULE_QSPI2//使用的QSPI模组 分别为MODULE_QSPI0,MODULE_QSPI1,MODULE_QSPI2,MODULE_QSPI3
-#define OLED_BAUDRATE       10000000.0f//波特率
-#define OLED_CLK_PIN        IfxQspi0_SCLK_P20_11_OUT//CLK,D0
-#define OLED_MTSR_PIN       IfxQspi2_SLSO5_P15_1_OUT//MOSI,D1
-#define OLED_MRST_PIN       IfxQspi2_MRSTB_P15_7_IN//MISO
-#define OLED_CS_PIN         IfxQspi2_SLSO0_P15_2_OUT//CS
-#define OLED_RES_PIN_MODULE MODULE_P20//RES
-#define OLED_RES_PIN_NUM    14//RES
-#define OLED_DC_PIN_MODULE  MODULE_P20//DC
-#define OLED_DC_PIN_NUM     13//DC
+//#define OLED_QSPI_MODULE    MODULE_QSPI2//使用的QSPI模组 分别为MODULE_QSPI0,MODULE_QSPI1,MODULE_QSPI2,MODULE_QSPI3
+//#define OLED_BAUDRATE       10000000.0f//波特率
+//#define OLED_CLK_PIN        IfxQspi2_SCLK_P15_3_OUT//CLK,D0
+//#define OLED_MTSR_PIN       IfxQspi2_MTSR_P15_5_OUT//MOSI,D1
+//#define OLED_MRST_PIN       IfxQspi2_MRSTA_P15_4_IN//MISO
+//#define OLED_CS_PIN         IfxQspi2_SLSO0_P15_2_OUT//CS
+//#define OLED_RES_PIN_MODULE MODULE_P15//RES
+//#define OLED_RES_PIN_NUM    1//RES
+//#define OLED_DC_PIN_MODULE  MODULE_P15//DC
+//#define OLED_DC_PIN_NUM     0//DC
+//用作软件spi时初始化引脚
+#define OLED_SCL_MODULE        MODULE_P20//使用软件spi引脚请在此处定义
+#define OLED_SDA_MODULE        MODULE_P15
+#define OLED_RST_MODULE        MODULE_P20
+#define OLED_DC_MODULE         MODULE_P20
+#define OLED_CS_MODULE         MODULE_P15//空脚
+#define OLED_SCL_NUM        11
+#define OLED_SDA_NUM        1
+#define OLED_RST_NUM        14
+#define OLED_DC_NUM         13
+#define OLED_CS_NUM         7
 
 
 extern IfxQspi_SpiMaster_Channel oled_spiChannel;
 extern IfxQspi_SpiMaster oled_spi;
 
 void SmartCar_Oled_Config_Init();
+void SmartCar_Oled_Imit_Pininit(void);
 void SmartCar_Oled_Init(void);
+
+void OLED_Imit_WtrData(uint8 data);
+void OLED_Imit_WrtCmd(uint8 cmd);
+void OLED_QSPI_WrtCmd(uint8 cmd);
+void OLED_QSPI_WrtData(uint8 data);
 
 /*
  * brief 写指令到oeld

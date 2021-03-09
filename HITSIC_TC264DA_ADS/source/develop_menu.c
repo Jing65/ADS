@@ -57,70 +57,25 @@ void InsertItem(item* Item, uint16 root, uint16 item_t)
 void CreatMenu(void)//**创建并插入一个新项需要增加一个新ITEMID枚举项***
 {
     Item[MENU] = CreatItem(list_item, "MENU", 0, 1);
-    Item[MODE] = CreatItem(paraI_item, "Mode", 0, 2);
-    Item[POSITION] = CreatItem(list_item, "Position", 0, 1);
-    Item[PID_K] = CreatItem(list_item, "Balance", 0, 1);
-    Item[SPEED] = CreatItem(list_item, "Speed", 0, 1);
-    Item[DIR] = CreatItem(list_item, "Dir", 0, 1);
+    Item[MOTO] = CreatItem(list_item, "Moto", 0, 1);
+    Item[SERVO] = CreatItem(list_item, "Servo", 0, 1);
+    Item[AD_s] = CreatItem(list_item, "AD_7_DATA", 0, 1);
+    Item[AD_l] = CreatItem(list_item, "AD_9_DATA", 0, 1);
     Item[HOLD] = CreatItem(order_item, "Hold", 0, 1);//保存菜单项
-    InsertItem(Item, MENU, MODE);
-    InsertItem(Item, MENU, POSITION);
-    InsertItem(Item, MENU, PID_K);
-    InsertItem(Item, MENU, SPEED);
-    InsertItem(Item, MENU, DIR);
+    InsertItem(Item, MENU, MOTO);
+    InsertItem(Item, MENU, SERVO);
+    InsertItem(Item, MENU, AD_s);
+    InsertItem(Item, MENU, AD_l);
     InsertItem(Item, MENU, HOLD);
-    Item[GYRO_X] = CreatItem(stateF_item, "gyro_x", 0, 1);
-    Item[GYRO_Y] = CreatItem(stateF_item, "gyro_y", 0, 1);
-    Item[GYRO_Z] = CreatItem(stateF_item, "gyro_z", 0, 1);
-    Item[ACC_X] = CreatItem(stateF_item, "acc_x", 0, 1);
-    Item[ACC_Y] = CreatItem(stateF_item, "acc_y", 0, 1);
-    Item[ACC_Z] = CreatItem(stateF_item, "acc_z", 0, 1);
-    InsertItem(Item, POSITION, GYRO_X);
-    InsertItem(Item, POSITION, GYRO_Y);
-    InsertItem(Item, POSITION, GYRO_Z);
-    InsertItem(Item, POSITION, ACC_X);
-    InsertItem(Item, POSITION, ACC_Y);
-    InsertItem(Item, POSITION, ACC_Z);
-    Item[ANGLE_SET] = CreatItem(paraF_item, "angle_set", -90, 90);
-    Item[ANGLE_CUR] = CreatItem(stateF_item, "angle_cur", -90, 90);
-    Item[ANGLE_KP] = CreatItem(paraF_item, "angle_kp", 0, 20);
-    Item[ANGLE_KI] = CreatItem(paraF_item, "angle_ki", 0, 20);
-    Item[ANGLE_KD] = CreatItem(paraF_item, "angle_kd", 0, 20);
-    Item[ANGLE_OUT] = CreatItem(stateF_item, "angle_out", -500, 500);
-    InsertItem(Item, PID_K, ANGLE_SET);
-    InsertItem(Item, PID_K, ANGLE_CUR);;
-    InsertItem(Item, PID_K, ANGLE_KP);
-    InsertItem(Item, PID_K, ANGLE_KI);
-    InsertItem(Item, PID_K, ANGLE_KD);
-    InsertItem(Item, PID_K, ANGLE_OUT);
-    Item[SPEED_SET] = CreatItem(paraF_item, "speed_set", -10000, 10000);
-    Item[SPEED_CUR] = CreatItem(stateF_item, "speed_cur", -1000, 1000);
-    Item[SPEED_KP] = CreatItem(paraF_item, "speed_kp", 0, 50);
-    Item[SPEED_KI] = CreatItem(paraF_item, "speed_ki", 0, 50);
-    Item[SPEED_KD] = CreatItem(paraF_item, "speed_kd", 0, 50);
-    Item[SPEED_MOTOR] = CreatItem(stateF_item, "speed_mot", -500, 500);
-    InsertItem(Item, SPEED, SPEED_SET);
-    InsertItem(Item, SPEED, SPEED_CUR);
-    InsertItem(Item, SPEED, SPEED_KP);
-    InsertItem(Item, SPEED, SPEED_KI);
-    InsertItem(Item, SPEED, SPEED_KD);
-    InsertItem(Item, SPEED, SPEED_MOTOR);
-    Item[DIR_KP] = CreatItem(paraF_item, "dir_kp", -20, 20);
-    Item[DIR_KI] = CreatItem(paraF_item, "dir_ki", -20, 20);
-    Item[DIR_KD] = CreatItem(paraF_item, "dir_kd", -20, 20);
-    Item[DIR_MID] = CreatItem(paraF_item, "dir_kp_mid", -20, 20);
-    Item[DIR_OUT] = CreatItem(stateF_item, "dir_out", -500, 500);
-    InsertItem(Item, DIR, DIR_KP);
-    InsertItem(Item, DIR, DIR_KI);
-    InsertItem(Item, DIR, DIR_KD);
-    InsertItem(Item, DIR, DIR_MID);
-    InsertItem(Item, DIR, DIR_OUT);
+    Item[PWM_MOTO] = CreatItem(paraF_item, "PWM_MOTO", 0, 100);
+    InsertItem(Item, MOTO, PWM_MOTO);
 }
 
-//void MenuInit(void)
-//{
-//
-//}
+void MenuInit(void)
+{
+
+
+}
 
 //-------------------------------------------------------------------------------------------------------------------
 //  @brief       打印菜单
@@ -182,26 +137,26 @@ void DataUpdate(void)
 key GetKey(void)
 {
     key key_oper = undo;
-    if(!GPIO_Read(P22,0)||!GPIO_Read(P22,1)||!GPIO_Read(P22,2)||!GPIO_Read(P22,3))
+    if(!GPIO_Read(P21,4)||!GPIO_Read(P20,3)||!GPIO_Read(P21,2)||!GPIO_Read(P21,3)||!GPIO_Read(P21,5))
     {
         Delay_ms(STM0,100);
-        if(!GPIO_Read(P22,2)&&(!GPIO_Read(P22,3)))
+        if(!GPIO_Read(P21,4))
         {
             key_oper = ok_o;
         }
-        else if(!GPIO_Read(P22,0))
+        else if(!GPIO_Read(P20,3))
         {
             key_oper = up_o;
         }
-        else if(!GPIO_Read(P22,1))
+        else if(!GPIO_Read(P21,2))
         {
             key_oper = down_o;
         }
-        else if(!GPIO_Read(P22,2))
+        else if(!GPIO_Read(P21,3))
         {
             key_oper = left_o;
         }
-        else if(!GPIO_Read(P22,3))
+        else if(!GPIO_Read(P21,5))
         {
             key_oper = right_o;
         }
@@ -241,7 +196,7 @@ void KeyOperation(key Key)
             CurItem = Item[CurItem].root_ID;
             }
           break;
-        case right_o:
+        case ok_o:
             if(Item[CurItem].item_type == list_item)
             {
                 CurMenu = CurItem;
@@ -249,9 +204,9 @@ void KeyOperation(key Key)
             }
             else if(CurItem == HOLD)
             {
-                GPIO_Set(P20,9, 0);
-                Delay_ms(STM0, 100);
-                GPIO_Set(P20,9, 1);
+//                GPIO_Set(P02,8, 1);
+//                Delay_ms(STM0, 100);
+//                GPIO_Set(P02,8, 0);
 //                iap_erase_page(0x01);
 //                iap_write_bytes(0x01, &CAR[0], PARA_MAX * sizeof(cardata));                            //保存修改的参量
             }
@@ -289,12 +244,12 @@ void ModifyintData(void)
                    if( now_num<min)
                        now_num=min;
                    break;
-               case left_o:
+               case right_o:
                     multiply= multiply/10;
                     if(multiply<1)
                        multiply=100;
                    break;
-               case ok_o:
+               case left_o:
                    Item[CurItem].item_data.intData = now_num;
                    break;
                case undo:
@@ -304,7 +259,7 @@ void ModifyintData(void)
            }
           if(g_key!=undo)
           PrintintData(multiply,now_num);
-          if (g_key==ok_o)
+          if (g_key==left_o)
           break;
         }
 
@@ -331,12 +286,12 @@ void ModifyfloatData(void)
                    if( now_num<min)
                        now_num=min;
                    break;
-               case left_o:
+               case right_o:
                     multiply= multiply/10;
                     if(multiply<0.001)
                        multiply=10;
                    break;
-               case ok_o:
+               case left_o:
                    Item[CurItem].item_data.floatData = now_num;
                    break;
                case undo:
@@ -346,7 +301,7 @@ void ModifyfloatData(void)
            }
           if(g_key!=undo)
           PrintfloatData(multiply,now_num);
-          if (g_key==ok_o)
+          if (g_key==left_o)
           break;
 
         }
