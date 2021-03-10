@@ -28,59 +28,59 @@ IfxQspi_SpiMaster_Channel oled_spiChannel;
 uint8    spiTxBuffer[SPI_BUFFER_SIZE];
 uint8    spiRxBuffer[SPI_BUFFER_SIZE];
 
-void SmartCar_Oled_Config_Init()
-{
-    IfxCpu_disableInterrupts();
-    IfxQspi_SpiMaster_Config oled_spiMasterConfig;
-    IfxQspi_SpiMaster_initModuleConfig(&oled_spiMasterConfig, &OLED_QSPI_MODULE);
-    oled_spiMasterConfig.base.mode  = SpiIf_Mode_master;
-    oled_spiMasterConfig.base.maximumBaudrate  = 10000000;
-    oled_spiMasterConfig.base.txPriority       = IFX_INTPRIO_DMA_CH1;
-    oled_spiMasterConfig.base.rxPriority       = IFX_INTPRIO_DMA_CH2;
-    oled_spiMasterConfig.base.erPriority       = IFX_INTPRIO_QSPI0_ER;
-    oled_spiMasterConfig.dma.txDmaChannelId = IfxDma_ChannelId_23;
-    oled_spiMasterConfig.dma.rxDmaChannelId = IfxDma_ChannelId_24;
-    oled_spiMasterConfig.dma.useDma = 1;
-    const IfxQspi_SpiMaster_Pins qspi_pins = {
-        &OLED_CLK_PIN, IfxPort_OutputMode_pushPull, // SCLK
-        &OLED_MTSR_PIN, IfxPort_OutputMode_pushPull, // MTSR
-        &OLED_MRST_PIN, IfxPort_InputMode_pullDown,  // MRST IfxQspi2_MRSTA_P15_4_IN
-        IfxPort_PadDriver_cmosAutomotiveSpeed3 // pad driver mode
-    };
-    oled_spiMasterConfig.pins = &qspi_pins;
-    IfxQspi_SpiMaster_initModule(&oled_spi, &oled_spiMasterConfig);
-    // create channel config
-    IfxQspi_SpiMaster_ChannelConfig oled_spiMasterChannelConfig;
-    IfxQspi_SpiMaster_initChannelConfig(&oled_spiMasterChannelConfig, &oled_spi);
-    oled_spiMasterChannelConfig.base.baudrate = OLED_BAUDRATE;
-    oled_spiMasterChannelConfig.base.mode.clockPolarity = SpiIf_ClockPolarity_idleHigh;
-    oled_spiMasterChannelConfig.base.mode.shiftClock = SpiIf_ShiftClock_shiftTransmitDataOnTrailingEdge;
-//    oled_spiMasterChannelConfig.base.mode.dataHeading = SpiIf_DataHeading_msbFirst;
-//    oled_spiMasterChannelConfig.base.mode.dataWidth = 8;
-//    oled_spiMasterChannelConfig.base.mode.csActiveLevel = Ifx_ActiveState_low;
-    oled_spiMasterChannelConfig.base.mode.csLeadDelay = SpiIf_SlsoTiming_1;
-    oled_spiMasterChannelConfig.base.mode.csTrailDelay = SpiIf_SlsoTiming_1;
-    oled_spiMasterChannelConfig.base.mode.csInactiveDelay = SpiIf_SlsoTiming_1;
-    // select pin configuration,这部分不可省略
-    const IfxQspi_SpiMaster_Output slsOutput = {
-        &OLED_CS_PIN,
-        IfxPort_OutputMode_pushPull,
-        IfxPort_PadDriver_cmosAutomotiveSpeed1
-    };
-    oled_spiMasterChannelConfig.sls.output = slsOutput;
-    //initialize channel
-    IfxQspi_SpiMaster_initChannel(&oled_spiChannel, &oled_spiMasterChannelConfig);
-        /*spi初始化结束*/
-    IfxCpu_enableInterrupts();
-    /*初始化res，dc*/
-    IfxPort_setPinMode(&OLED_RES_PIN_MODULE, OLED_RES_PIN_NUM,  IfxPort_Mode_outputPushPullGeneral);//res,推挽式输出,初始化为高电平
-    IfxPort_setPinPadDriver(&OLED_RES_PIN_MODULE, OLED_RES_PIN_NUM, IfxPort_PadDriver_cmosAutomotiveSpeed1);
-    IfxPort_setPinHigh(&OLED_RES_PIN_MODULE, OLED_RES_PIN_NUM);
-    IfxPort_setPinMode(&OLED_DC_PIN_MODULE, OLED_DC_PIN_NUM,  IfxPort_Mode_outputPushPullGeneral);//dc，推挽式输出,初始化为高电平
-    IfxPort_setPinPadDriver(&OLED_DC_PIN_MODULE, OLED_DC_PIN_NUM, IfxPort_PadDriver_cmosAutomotiveSpeed1);
-    IfxPort_setPinHigh(&OLED_DC_PIN_MODULE, OLED_DC_PIN_NUM);
-    /*引脚res,dc初始化结束*/
-}
+//void SmartCar_Oled_Config_Init()
+//{
+//    IfxCpu_disableInterrupts();
+//    IfxQspi_SpiMaster_Config oled_spiMasterConfig;
+//    IfxQspi_SpiMaster_initModuleConfig(&oled_spiMasterConfig, &OLED_QSPI_MODULE);
+//    oled_spiMasterConfig.base.mode  = SpiIf_Mode_master;
+//    oled_spiMasterConfig.base.maximumBaudrate  = 10000000;
+//    oled_spiMasterConfig.base.txPriority       = IFX_INTPRIO_DMA_CH1;
+//    oled_spiMasterConfig.base.rxPriority       = IFX_INTPRIO_DMA_CH2;
+//    oled_spiMasterConfig.base.erPriority       = IFX_INTPRIO_QSPI0_ER;
+//    oled_spiMasterConfig.dma.txDmaChannelId = IfxDma_ChannelId_23;
+//    oled_spiMasterConfig.dma.rxDmaChannelId = IfxDma_ChannelId_24;
+//    oled_spiMasterConfig.dma.useDma = 1;
+//    const IfxQspi_SpiMaster_Pins qspi_pins = {
+//        &OLED_CLK_PIN, IfxPort_OutputMode_pushPull, // SCLK
+//        &OLED_MTSR_PIN, IfxPort_OutputMode_pushPull, // MTSR
+//        &OLED_MRST_PIN, IfxPort_InputMode_pullDown,  // MRST IfxQspi2_MRSTA_P15_4_IN
+//        IfxPort_PadDriver_cmosAutomotiveSpeed3 // pad driver mode
+//    };
+//    oled_spiMasterConfig.pins = &qspi_pins;
+//    IfxQspi_SpiMaster_initModule(&oled_spi, &oled_spiMasterConfig);
+//    // create channel config
+//    IfxQspi_SpiMaster_ChannelConfig oled_spiMasterChannelConfig;
+//    IfxQspi_SpiMaster_initChannelConfig(&oled_spiMasterChannelConfig, &oled_spi);
+//    oled_spiMasterChannelConfig.base.baudrate = OLED_BAUDRATE;
+//    oled_spiMasterChannelConfig.base.mode.clockPolarity = SpiIf_ClockPolarity_idleHigh;
+//    oled_spiMasterChannelConfig.base.mode.shiftClock = SpiIf_ShiftClock_shiftTransmitDataOnTrailingEdge;
+////    oled_spiMasterChannelConfig.base.mode.dataHeading = SpiIf_DataHeading_msbFirst;
+////    oled_spiMasterChannelConfig.base.mode.dataWidth = 8;
+////    oled_spiMasterChannelConfig.base.mode.csActiveLevel = Ifx_ActiveState_low;
+//    oled_spiMasterChannelConfig.base.mode.csLeadDelay = SpiIf_SlsoTiming_1;
+//    oled_spiMasterChannelConfig.base.mode.csTrailDelay = SpiIf_SlsoTiming_1;
+//    oled_spiMasterChannelConfig.base.mode.csInactiveDelay = SpiIf_SlsoTiming_1;
+//    // select pin configuration,这部分不可省略
+//    const IfxQspi_SpiMaster_Output slsOutput = {
+//        &OLED_CS_PIN,
+//        IfxPort_OutputMode_pushPull,
+//        IfxPort_PadDriver_cmosAutomotiveSpeed1
+//    };
+//    oled_spiMasterChannelConfig.sls.output = slsOutput;
+//    //initialize channel
+//    IfxQspi_SpiMaster_initChannel(&oled_spiChannel, &oled_spiMasterChannelConfig);
+//        /*spi初始化结束*/
+//    IfxCpu_enableInterrupts();
+//    /*初始化res，dc*/
+//    IfxPort_setPinMode(&OLED_RES_PIN_MODULE, OLED_RES_PIN_NUM,  IfxPort_Mode_outputPushPullGeneral);//res,推挽式输出,初始化为高电平
+//    IfxPort_setPinPadDriver(&OLED_RES_PIN_MODULE, OLED_RES_PIN_NUM, IfxPort_PadDriver_cmosAutomotiveSpeed1);
+//    IfxPort_setPinHigh(&OLED_RES_PIN_MODULE, OLED_RES_PIN_NUM);
+//    IfxPort_setPinMode(&OLED_DC_PIN_MODULE, OLED_DC_PIN_NUM,  IfxPort_Mode_outputPushPullGeneral);//dc，推挽式输出,初始化为高电平
+//    IfxPort_setPinPadDriver(&OLED_DC_PIN_MODULE, OLED_DC_PIN_NUM, IfxPort_PadDriver_cmosAutomotiveSpeed1);
+//    IfxPort_setPinHigh(&OLED_DC_PIN_MODULE, OLED_DC_PIN_NUM);
+//    /*引脚res,dc初始化结束*/
+//}
 void SmartCar_Oled_Imit_Pininit(void)
 {
     IfxPort_setPinMode(&OLED_SCL_MODULE, OLED_SCL_NUM,  IfxPort_Mode_outputPushPullGeneral);//res,推挽式输出,初始化为高电平
@@ -202,23 +202,23 @@ void OLED_Imit_WrtCmd(uint8 cmd)
     IfxPort_setPinHigh(&OLED_CS_MODULE, OLED_CS_NUM);
 }
 
-void OLED_QSPI_WrtCmd(uint8 cmd)
-{
-    int i =0;
-    spiTxBuffer[i] = cmd;
-    while( IfxQspi_SpiMaster_getStatus(&oled_spiChannel) == SpiIf_Status_busy );
-    IfxPort_setPinLow(&OLED_DC_PIN_MODULE, OLED_DC_PIN_NUM);
-    IfxQspi_SpiMaster_exchange(&oled_spiChannel, &spiTxBuffer[i], NULL_PTR, 1U);
-}
-
-void OLED_QSPI_WrtData(uint8 data)
-{
-    int i =0;
-    spiTxBuffer[i] = data;
-    while( IfxQspi_SpiMaster_getStatus(&oled_spiChannel) == SpiIf_Status_busy );
-    IfxPort_setPinHigh(&OLED_DC_PIN_MODULE, OLED_DC_PIN_NUM);
-    IfxQspi_SpiMaster_exchange(&oled_spiChannel, &spiTxBuffer[i], NULL_PTR, 1U);
-}
+//void OLED_QSPI_WrtCmd(uint8 cmd)
+//{
+//    int i =0;
+//    spiTxBuffer[i] = cmd;
+//    while( IfxQspi_SpiMaster_getStatus(&oled_spiChannel) == SpiIf_Status_busy );
+//    IfxPort_setPinLow(&OLED_DC_PIN_MODULE, OLED_DC_PIN_NUM);
+//    IfxQspi_SpiMaster_exchange(&oled_spiChannel, &spiTxBuffer[i], NULL_PTR, 1U);
+//}
+//
+//void OLED_QSPI_WrtData(uint8 data)
+//{
+//    int i =0;
+//    spiTxBuffer[i] = data;
+//    while( IfxQspi_SpiMaster_getStatus(&oled_spiChannel) == SpiIf_Status_busy );
+//    IfxPort_setPinHigh(&OLED_DC_PIN_MODULE, OLED_DC_PIN_NUM);
+//    IfxQspi_SpiMaster_exchange(&oled_spiChannel, &spiTxBuffer[i], NULL_PTR, 1U);
+//}
 
 void OLED_WrtCmd(uint8 cmd)
 {

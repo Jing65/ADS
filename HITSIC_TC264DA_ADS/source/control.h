@@ -14,12 +14,14 @@
 #include "common.h"
 #include "SmartCar_Encoder.h"
 #include "SmartCar_Systick.h"
+#include "SmartCar_Pwm.h"
 #include "port_def.h"
 #include "long_adc.h"
 
 
-extern float pwm_servo;
-extern float servo_mid;
+extern int pwm_servo;
+extern int servo_mid;
+extern int pwm_moto;
 void Servo_Elec(void);
 void Delay_Start(void);
 void Moto_Speed(void);//含pid控制的电机pwm输出

@@ -282,11 +282,11 @@ void Send_Data(void)
 
 void Elec_process(void)
 {
-    LV_Sample();//滤波
-    LV_Get_Val();//需用到归一化的最大值
-    recognize_road();
-    get_err();
-    out_of_road();
+//    LV_Sample();//滤波
+//    LV_Get_Val();//需用到归一化的最大值
+//    recognize_road();
+//    get_err();
+//    out_of_road();
     Send_Data();
 }
 

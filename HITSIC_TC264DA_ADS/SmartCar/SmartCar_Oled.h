@@ -44,7 +44,6 @@
 //#define OLED_RES_PIN_NUM    1//RES
 //#define OLED_DC_PIN_MODULE  MODULE_P15//DC
 //#define OLED_DC_PIN_NUM     0//DC
-//用作软件spi时初始化引脚
 #define OLED_SCL_MODULE        MODULE_P20//使用软件spi引脚请在此处定义
 #define OLED_SDA_MODULE        MODULE_P15
 #define OLED_RST_MODULE        MODULE_P20

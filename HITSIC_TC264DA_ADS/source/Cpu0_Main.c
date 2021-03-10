@@ -66,18 +66,19 @@ int core0_main(void)
 //    GPIO_Init(P02,8, PUSHPULL,0);
 //    //PWM初始化
     PWM_init();
-//    //定时中断初始化
+////    //定时中断初始化
     PIT_init();
-//    //编码器初始化
-    Encoder_init();
-//    //外部中断初始化
-    Eru_init();
-//    //串口初始化
-    Uart_init();
-//    //创建菜单并完成参量菜单项的赋值
+////    //编码器初始化
+//    Encoder_init();
+////    //外部中断初始化
+//    Eru_init();
+////    //串口初始化
+//    Uart_init();
+////    //创建菜单并完成参量菜单项的赋值
+    elec_init();
     CreatMenu();
     //给状态菜单项赋值
-    //MenuInit();
+    MenuInit();
     PrintMenu();
 
     IfxCpu_enableInterrupts();
@@ -89,6 +90,8 @@ int core0_main(void)
         KeyOperation(get_key);
         if(get_key!=undo)
         PrintMenu();
+        if(!GPIO_Read(P20,12))
+        PrintMenu();
 //        Elec_process();
 
     }
@@ -98,7 +101,6 @@ int core0_main(void)
 IFX_INTERRUPT(cc60_pit_ch0_isr, 0, CCU6_0_CH0_ISR_PRIORITY)
 {
     enableInterrupts();//开启中断嵌套
-    //按键检测函数
     PIT_CLEAR_FLAG(CCU6_0, PIT_CH0);
 
 }

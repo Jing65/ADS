@@ -35,9 +35,9 @@ void elec_init(void)//ADC≥ı ºªØ
 
 void PWM_init(void)
 {
-    SmartCar_Gtm_Pwm_Init(&Servo_PIN, 50, servo_mid);
-    SmartCar_Gtm_Pwm_Init(&Motor_PIN_0, 50, 0);
-    SmartCar_Gtm_Pwm_Init(&Motor_PIN_1, 50, 0);
+    SmartCar_Gtm_Pwm_Init(&Servo_PIN, 50, (uint32)servo_mid);
+    SmartCar_Gtm_Pwm_Init(&Motor_PIN_0, 20000, 0);
+    SmartCar_Gtm_Pwm_Init(&Motor_PIN_1, 20000, 0);
 }
 
 void PIT_init(void)
