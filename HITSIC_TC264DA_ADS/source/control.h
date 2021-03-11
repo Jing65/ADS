@@ -18,10 +18,11 @@
 #include "port_def.h"
 #include "long_adc.h"
 
-
-extern int pwm_servo;
-extern int servo_mid;
-extern int pwm_moto;
+extern float KP_m;
+extern float KI_m;
+extern float pwm_servo;
+extern float servo_mid;
+//extern float Moto_Speed_Goal_Set;
 void Servo_Elec(void);
 void Delay_Start(void);
 void Moto_Speed(void);//含pid控制的电机pwm输出

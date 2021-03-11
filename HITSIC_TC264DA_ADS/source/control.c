@@ -5,28 +5,25 @@
  *      Author: HP
  */
 #include "control.h"
-int pwm_servo=7350;
-int servo_mid = 7350;
-
-
-static float KP_M = 32;
-static float KI_M = 17;
+float pwm_servo=7.35;
+float servo_mid = 7.35;
+float KP_m = 32;
+float KI_m = 17;
 static float KP_S_E = 10.5;//电磁舵机调参
 static float KD_S_E = 0.2;//电磁舵机调参
 //static float Stop_Min = 2;//出赛到保护的电磁的最小值
 static float pwm_servo_variation=0;
 static float err_synthetical_last = 0;
-int pwm_moto = 0;
+static float pwm_moto = 0;
 //static float pwm_moto_goal = 30;//电机速度（用于菜单调节）
 static float pwm_moto_add = 0;//电机PID控制增量
-static float Moto_Speed_Goal_Set = 1.5;//菜单设置中的目标速度
 static float Moto_Speed_Goal=0;//用于控制和Wifi上位机中的目标速度
 static float Moto_Speed_Real;//实际电机速度
 static float Error_Moto_Now;//电机现在error
 static float Error_Moto_Last;//电机前一个error
-static float Meter_every_Round = 0.48564;//数字需改！！！
-static float LIMIT_S = 1.8;//需要改（不改舵机可能不动）
-static float LIMIT_M = 80;//需要改（补钙电机可能不动）
+float Meter_every_Round = 0.48564;//数字需改！！！
+float LIMIT_SE = 1.8;//需要改（不改舵机可能不动）
+static float LIMIT_MO = 80;//需要改（补钙电机可能不动）
 //static float pwm_servo_die = 0.1;
 
 
@@ -42,53 +39,73 @@ void Moto_Speed(void)//电机控制
 //        Moto_Speed_Goal = Moto_Speed_Goal_Set;
 //    }
 //
-//    //电机PID控制
-//    Moto_Speed_Real = 0.0001 * SmartCar_Encoder_Get(GPT12_T2) * Meter_every_Round / 0.005;
-//    SmartCar_Encoder_Clear(GPT12_T2);//清除编码器
-//    Error_Moto_Now = (Moto_Speed_Goal - Moto_Speed_Real);
-//    pwm_moto_add = ((KP_M * (Error_Moto_Now - Error_Moto_Last)) + (KI_M * Error_Moto_Now));
-//    Error_Moto_Last = Error_Moto_Now;
-//    pwm_moto = (pwm_moto + pwm_moto_add);
-//
-//    //电机限幅
-//    if(pwm_moto >= LIMIT_M)
-//    {
-//        pwm_moto = LIMIT_M;
-//    }
-//    else if(pwm_moto<=-LIMIT_M)
-//    {
-//        pwm_moto = -LIMIT_M;
-//    }
-//
-//    //电机输出
-//    if (pwm_moto>0)
-//    {
-//        SmartCar_Gtm_Pwm_Setduty(&Motor_PIN_0, pwm_moto);
-//        SmartCar_Gtm_Pwm_Setduty(&Motor_PIN_1, 0);
-//    }
-//    else if(pwm_moto<0)
-//    {
-//        SmartCar_Gtm_Pwm_Setduty(&Motor_PIN_0, 0);
-//        SmartCar_Gtm_Pwm_Setduty(&Motor_PIN_1, -pwm_moto);
-//    }
-    static uint32 flag=0;
-    flag++;
-        if(flag<=1000)
-        {
-            pwm_moto = 4000;
-        }
-        if(flag > 1000 && flag < 2000)
-        {
-            pwm_moto = 0;
-        }
-        if(flag == 2000)
-        {
-            pwm_moto = 4000;
-            flag = 0;
-        }
+   float Moto_Speed_Goal_Set = 0;//菜单设置中的目标速度
+   static uint32 flag=0;
+   flag++;
+            if(flag<=1000)
+            {
+                Moto_Speed_Goal_Set = 2.5;
+            }
+            if(flag > 1000 && flag < 2000)
+            {
+                Moto_Speed_Goal_Set = 0;
+            }
+            if(flag == 2000)
+            {
+                Moto_Speed_Goal_Set = 2.5;
+                flag = 0;
+            }
 
-         SmartCar_Gtm_Pwm_Setduty(&Motor_PIN_0, pwm_moto);
-         SmartCar_Gtm_Pwm_Setduty(&Motor_PIN_1, 0);
+    Moto_Speed_Goal = Moto_Speed_Goal_Set;
+    //电机PID控制
+    Moto_Speed_Real = 0.0001 * (float)SmartCar_Encoder_Get(GPT12_T2) * Meter_every_Round / 0.005;
+    SmartCar_Encoder_Clear(GPT12_T2);//清除编码器
+    Error_Moto_Now = (Moto_Speed_Goal - Moto_Speed_Real);
+    pwm_moto_add = ((KP_m * (Error_Moto_Now - Error_Moto_Last)) + (KI_m * Error_Moto_Now));
+    Error_Moto_Last = Error_Moto_Now;
+    pwm_moto = (pwm_moto + pwm_moto_add);
+
+    //电机限幅
+    if(pwm_moto >= LIMIT_MO)
+    {
+        pwm_moto = LIMIT_MO;
+    }
+    else if(pwm_moto<=-LIMIT_MO)
+    {
+        pwm_moto = -LIMIT_MO;
+    }
+
+    //电机输出
+    if (pwm_moto>0)
+    {
+        SmartCar_Gtm_Pwm_Setduty(&Motor_PIN_0, (uint32)(pwm_moto*100));
+        SmartCar_Gtm_Pwm_Setduty(&Motor_PIN_1, 0);
+    }
+    else if(pwm_moto<0)
+    {
+        SmartCar_Gtm_Pwm_Setduty(&Motor_PIN_0, 0);
+        SmartCar_Gtm_Pwm_Setduty(&Motor_PIN_1, (uint32)(-pwm_moto*100));
+    }
+
+///**************************************************开环测电机*************************************************/
+////    static uint32 flag=0;
+////    flag++;
+////        if(flag<=1000)
+////        {
+////            pwm_moto = 4000;
+////        }
+////        if(flag > 1000 && flag < 2000)
+////        {
+////            pwm_moto = 0;
+////        }
+////        if(flag == 2000)
+////        {
+////            pwm_moto = 4000;
+////            flag = 0;
+////        }
+////
+////         SmartCar_Gtm_Pwm_Setduty(&Motor_PIN_0, pwm_moto);
+////         SmartCar_Gtm_Pwm_Setduty(&Motor_PIN_1, 0);
 
 }
 
@@ -127,7 +144,7 @@ void Servo_Elec(void)//电磁舵机控制
 //    }
 //    SmartCar_Gtm_Pwm_Setduty(&Servo_PIN, pwm_servo);
     /*********************************测舵机中值**********************************/
-    uint32 pwm_servo_l=(uint32)servo_mid;
+    uint32 pwm_servo_l=(uint32)(servo_mid*100);
     SmartCar_Gtm_Pwm_Setduty(&Servo_PIN, pwm_servo_l);
 }
 

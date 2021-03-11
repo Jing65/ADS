@@ -44,6 +44,7 @@
 #pragma section all "cpu0_dsram"
 //IfxCpu_syncEvent g_cpuSyncEvent;
 
+
 int core0_main(void)
 {
     IfxCpu_disableInterrupts();
@@ -69,7 +70,7 @@ int core0_main(void)
 ////    //定时中断初始化
     PIT_init();
 ////    //编码器初始化
-//    Encoder_init();
+    Encoder_init();
 ////    //外部中断初始化
 //    Eru_init();
 ////    //串口初始化
@@ -92,6 +93,7 @@ int core0_main(void)
         PrintMenu();
         if(!GPIO_Read(P20,12))
         PrintMenu();
+//        num_of_encoder = SmartCar_Encoder_Get(GPT12_T2);
 //        Elec_process();
 
     }

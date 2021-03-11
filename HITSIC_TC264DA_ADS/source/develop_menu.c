@@ -54,96 +54,9 @@ void InsertItem(item* Item, uint16 root, uint16 item_t)
     Item[item_t].list_ID = (++Item[root].list_num);
 }
 
-void CreatMenu(void)//**创建并插入一个新项需要增加一个新ITEMID枚举项***
-{
-    Item[MENU] = CreatItem(list_item, "MENU", 0, 1);
-    Item[MODE] = CreatItem(paraI_item, "EXAMPLE", 0, 2);
-    Item[AD_] = CreatItem(list_item, "AD_read", 0, 1);
-    Item[STEER] = CreatItem(list_item, "steer&speed", 0, 1);
-    Item[MOTOR] = CreatItem(list_item, "MOTOR", 0, 1);
-    Item[UNUSE] = CreatItem(list_item, "XXXX", 0, 1);
-    Item[HOLD] = CreatItem(order_item, "Hold", 0, 1);//保存菜单项
-    InsertItem(Item, MENU, MODE);
-    InsertItem(Item, MENU, AD_);
-    InsertItem(Item, MENU, STEER);
-    InsertItem(Item, MENU, MOTOR);
-    InsertItem(Item, MENU, UNUSE);
-    InsertItem(Item, MENU, HOLD);
-    Item[AD_1] = CreatItem(stateF_item, "AD_1", 0, 1);
-    Item[AD_2] = CreatItem(stateF_item, "AD_2", 0, 1);
-    Item[AD_3] = CreatItem(stateF_item, "AD_3", 0, 1);
-    Item[AD_4] = CreatItem(stateF_item, "AD_4", 0, 1);
-    Item[AD_5] = CreatItem(stateF_item, "AD_5", 0, 1);
-    Item[AD_6] = CreatItem(stateF_item, "AD_6", 0, 1);
-    Item[AD_7] = CreatItem(stateF_item, "AD_7", 0, 1);
-    Item[AD_8] = CreatItem(stateF_item, "AD_8", 0, 1);
-    Item[AD_9] = CreatItem(stateF_item, "AD_9", 0, 1);
-    Item[AD_10] = CreatItem(stateF_item, "AD_10", 0, 1);
-    Item[AD_11] = CreatItem(stateF_item, "AD_11", 0, 1);
-    Item[AD_12] = CreatItem(stateF_item, "AD_12", 0, 1);
-    Item[AD_13] = CreatItem(stateF_item, "AD_13", 0, 1);
-    Item[AD_14] = CreatItem(stateF_item, "AD_14", 0, 1);
-    Item[AD_15] = CreatItem(stateF_item, "AD_15", 0, 1);
-    Item[AD_16] = CreatItem(stateF_item, "AD_16", 0, 1);
-    InsertItem(Item, AD_, AD_1);
-    InsertItem(Item, AD_, AD_2);
-    InsertItem(Item, AD_, AD_3);
-    InsertItem(Item, AD_, AD_4);
-    InsertItem(Item, AD_, AD_5);
-    InsertItem(Item, AD_, AD_6);
-    InsertItem(Item, AD_, AD_7);
-    InsertItem(Item, AD_, AD_8);
-    InsertItem(Item, AD_, AD_9);
-    InsertItem(Item, AD_, AD_10);
-    InsertItem(Item, AD_, AD_11);
-    InsertItem(Item, AD_, AD_12);
-    InsertItem(Item, AD_, AD_13);
-    InsertItem(Item, AD_, AD_14);
-    InsertItem(Item, AD_, AD_15);
-    InsertItem(Item, AD_, AD_16);
-    Item[Moto_Goal] = CreatItem(paraF_item, "Moto_Goal", -90, 90);
-    Item[KP_S] = CreatItem(paraF_item, "KP_S", -90, 90);
-    Item[KD_S] = CreatItem(paraF_item, "KD_S", 0, 20);
-    Item[LIMIT_S] = CreatItem(paraF_item, "LIMIT_S", 0, 20);
-    Item[MID_SERVO] = CreatItem(paraI_item, "mid_servo", 0, 10000);
-    Item[SERVO_1] = CreatItem(stateF_item, "RXXX", -500, 500);
-    Item[SERVO_2] = CreatItem(stateF_item, "RXXX", -500, 500);
-    InsertItem(Item, STEER, Moto_Goal);
-    InsertItem(Item, STEER, KP_S);;
-    InsertItem(Item, STEER, KD_S);
-    InsertItem(Item, STEER, LIMIT_S);
-    InsertItem(Item, STEER, MID_SERVO);
-    InsertItem(Item, STEER, SERVO_1);
-    InsertItem(Item, STEER, SERVO_2);
-    Item[KP_M] = CreatItem(paraF_item, "KP_M", -10000, 10000);
-    Item[KI_M] = CreatItem(paraF_item, "KI_M", -1000, 1000);
-    Item[MOTOR_1] = CreatItem(paraI_item, "MOTO", -10000, 10000);
-    Item[MOTOR_2] = CreatItem(paraF_item, "XXXX", 0, 50);
-    Item[MOTOR_3] = CreatItem(stateF_item, "RXXX", 0, 50);
-    Item[MOTOR_4] = CreatItem(stateF_item, "RXXX", -500, 500);
-    InsertItem(Item, MOTOR, KP_M);
-    InsertItem(Item, MOTOR, KI_M);
-    InsertItem(Item, MOTOR, MOTOR_1);
-    InsertItem(Item, MOTOR, MOTOR_2);
-    InsertItem(Item, MOTOR, MOTOR_3);
-    InsertItem(Item, MOTOR, MOTOR_4);
-    Item[U_1] = CreatItem(paraF_item, "XXXX", -20, 20);
-    Item[U_2] = CreatItem(paraF_item, "XXXX", -20, 20);
-    Item[U_3] = CreatItem(paraF_item, "XXXX", -20, 20);
-    Item[U_4] = CreatItem(paraF_item, "XXXX", -20, 20);
-    Item[U_5] = CreatItem(stateF_item, "RXXX", -500, 500);
-    InsertItem(Item, UNUSE, U_1);
-    InsertItem(Item, UNUSE, U_2);
-    InsertItem(Item, UNUSE, U_3);
-    InsertItem(Item, UNUSE, U_4);
-    InsertItem(Item, UNUSE, U_5);
-}
 
-void MenuInit(void)
-{
-    Item[MID_SERVO].item_data.intData=(int16)servo_mid;
-    Item[MOTOR_1].item_data.intData=(int16)pwm_moto;
-}
+
+
 
 //-------------------------------------------------------------------------------------------------------------------
 //  @brief       打印菜单
@@ -190,14 +103,105 @@ void PrintMenu(void)
 //  @return
 //  Sample usage:
 //-------------------------------------------------------------------------------------------------------------------
-void DataUpdate(void)
+void CreatMenu(void)//**创建并插入一个新项需要增加一个新ITEMID枚举项***
 {
-    servo_mid=Item[MID_SERVO].item_data.intData;
-    CAR[6].intData=(int16)servo_mid;
-    pwm_moto=Item[MOTOR_1].item_data.intData;
-    CAR[9].intData=(int16)pwm_moto;
+    Item[MENU] = CreatItem(list_item, "MENU", 0, 1);
+    Item[MODE] = CreatItem(paraI_item, "EXAMPLE", 0, 2);
+    Item[AD_] = CreatItem(list_item, "AD_read", 0, 1);
+    Item[STEER] = CreatItem(list_item, "steer&speed", 0, 1);
+    Item[MOTOR] = CreatItem(list_item, "MOTOR", 0, 1);
+    Item[UNUSE] = CreatItem(list_item, "XXXX", 0, 1);
+    Item[HOLD] = CreatItem(order_item, "Hold", 0, 1);//保存菜单项
+    InsertItem(Item, MENU, MODE);
+    InsertItem(Item, MENU, AD_);
+    InsertItem(Item, MENU, STEER);
+    InsertItem(Item, MENU, MOTOR);
+    InsertItem(Item, MENU, UNUSE);
+    InsertItem(Item, MENU, HOLD);
+    Item[AD_1] = CreatItem(stateF_item, "AD_1", 0, 400);
+    Item[AD_2] = CreatItem(stateF_item, "AD_2", 0, 400);
+    Item[AD_3] = CreatItem(stateF_item, "AD_3", 0, 400);
+    Item[AD_4] = CreatItem(stateF_item, "AD_4", 0, 400);
+    Item[AD_5] = CreatItem(stateF_item, "AD_5", 0, 400);
+    Item[AD_6] = CreatItem(stateF_item, "AD_6", 0, 400);
+    Item[AD_7] = CreatItem(stateF_item, "AD_7", 0, 400);
+    Item[AD_8] = CreatItem(stateF_item, "AD_8", 0, 400);
+    Item[AD_9] = CreatItem(stateF_item, "AD_9", 0, 400);
+    Item[AD_10] = CreatItem(stateF_item, "AD_10", 0, 400);
+    Item[AD_11] = CreatItem(stateF_item, "AD_11", 0, 400);
+    Item[AD_12] = CreatItem(stateF_item, "AD_12", 0, 400);
+    Item[AD_13] = CreatItem(stateF_item, "AD_13", 0, 400);
+    Item[AD_14] = CreatItem(stateF_item, "AD_14", 0, 400);
+    Item[AD_15] = CreatItem(stateF_item, "AD_15", 0, 400);
+    Item[AD_16] = CreatItem(stateF_item, "AD_16", 0, 400);
+    InsertItem(Item, AD_, AD_1);
+    InsertItem(Item, AD_, AD_2);
+    InsertItem(Item, AD_, AD_3);
+    InsertItem(Item, AD_, AD_4);
+    InsertItem(Item, AD_, AD_5);
+    InsertItem(Item, AD_, AD_6);
+    InsertItem(Item, AD_, AD_7);
+    InsertItem(Item, AD_, AD_8);
+    InsertItem(Item, AD_, AD_9);
+    InsertItem(Item, AD_, AD_10);
+    InsertItem(Item, AD_, AD_11);
+    InsertItem(Item, AD_, AD_12);
+    InsertItem(Item, AD_, AD_13);
+    InsertItem(Item, AD_, AD_14);
+    InsertItem(Item, AD_, AD_15);
+    InsertItem(Item, AD_, AD_16);
+    Item[Moto_Goal] = CreatItem(paraF_item, "Moto_Goal", -90, 90);
+    Item[KP_S] = CreatItem(paraF_item, "KP_S", -90, 90);
+    Item[KD_S] = CreatItem(paraF_item, "KD_S", 0, 20);
+    Item[LIMIT_S] = CreatItem(paraF_item, "LIMIT_S", 0, 20);
+    Item[MID_SERVO] = CreatItem(stateI_item, "mid_servo", 0, 1500);
+    Item[SERVO_1] = CreatItem(paraF_item, "RXXX", -500, 500);
+    Item[SERVO_2] = CreatItem(stateF_item, "RXXX", -500, 500);
+    InsertItem(Item, STEER, Moto_Goal);
+    InsertItem(Item, STEER, KP_S);;
+    InsertItem(Item, STEER, KD_S);
+    InsertItem(Item, STEER, LIMIT_S);
+    InsertItem(Item, STEER, MID_SERVO);
+    InsertItem(Item, STEER, SERVO_1);
+    InsertItem(Item, STEER, SERVO_2);
+    Item[KP_M] = CreatItem(paraF_item, "KP_M", 0, 1000);
+    Item[KI_M] = CreatItem(paraF_item, "KI_M", 0, 1000);
+    Item[MOTOR_1] = CreatItem(paraI_item, "XXXX", -10000, 10000);
+    Item[MOTOR_2] = CreatItem(paraF_item, "XXXX", 0, 50);
+    Item[MOTOR_3] = CreatItem(stateI_item, "RXXX", -30000, 30000);
+    Item[MOTOR_4] = CreatItem(stateF_item, "RXXX", -500, 500);
+    InsertItem(Item, MOTOR, KP_M);
+    InsertItem(Item, MOTOR, KI_M);
+    InsertItem(Item, MOTOR, MOTOR_1);
+    InsertItem(Item, MOTOR, MOTOR_2);
+    InsertItem(Item, MOTOR, MOTOR_3);
+    InsertItem(Item, MOTOR, MOTOR_4);
+    Item[U_1] = CreatItem(paraF_item, "XXXX", -20, 20);
+    Item[U_2] = CreatItem(paraF_item, "XXXX", -20, 20);
+    Item[U_3] = CreatItem(paraF_item, "XXXX", -20, 20);
+    Item[U_4] = CreatItem(paraF_item, "XXXX", -20, 20);
+    Item[U_5] = CreatItem(stateF_item, "RXXX", -500, 500);
+    InsertItem(Item, UNUSE, U_1);
+    InsertItem(Item, UNUSE, U_2);
+    InsertItem(Item, UNUSE, U_3);
+    InsertItem(Item, UNUSE, U_4);
+    InsertItem(Item, UNUSE, U_5);
 }
 
+
+void DataUpdate(void)
+{
+    Item[MID_SERVO].item_data.intData=(int16)(servo_mid*100);
+     KP_m=Item[KP_M].item_data.floatData;
+     KI_m=Item[KI_M].item_data.floatData;
+}
+
+void MenuInit(void)
+{
+    Item[MID_SERVO].item_data.intData=(int16)(servo_mid*100);
+    Item[KP_M].item_data.floatData=KP_m;
+    Item[KI_M].item_data.floatData=KI_m;
+}
 //-------------------------------------------------------------------------------------------------------------------
 //  @brief        检测按键
 //  @param
