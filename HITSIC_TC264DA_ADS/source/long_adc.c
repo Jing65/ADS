@@ -22,20 +22,20 @@
 
 
 const uint8 SampleTimes=40;
-uint32 LV_Temp[8][40] = {0};
-float LV[8]={0};
+
+uint32 LV_Temp[8][40];
+static float LV[8]={0};
 float AD[8]={0};
 float MinLVGot=0.05;
 float err_ad_now[2]={0,0};
 float err_synthetical_now = 0;
 _Bool Flag_Find_Max = 1;//一开始不开始寻找
-int If_Start = 0;//延时发车
+uint8 If_Start = 0;//延时发车
 //原来测好的ad口
-//uint8_t channel_name[8]={16,23,17,18,10,11,12,13};
+uint8 channel_name[8]={ADC2_CH4_A36,ADC0_CH3_A3,ADC1_CH8_A24,ADC0_CH5_A5,ADC1_CH5_A21,ADC0_CH7_A7,ADC1_CH1_A17,ADC0_CH1_A1};
+uint8 channel_adc[8]={ADC_2,ADC_0,ADC_1,ADC_0,ADC_1,ADC_0,ADC_1,ADC_0};
 //使AD通道 0到6分别对应 左1横、右一横、左竖、右竖、左二横、右二横、中间电感
 
-//尚未实现
-//char channel_name[8][12]={"ADC0_CH0_A0","ADC0_CH1_A1","ADC0_CH2_A2","ADC0_CH3_A3","ADC0_CH4_A4","ADC0_CH5_A5","ADC0_CH6_A6","ADC0_CH7_A7"};
 //上位机传回的数组
 float Wifi_Data[10] = {0};
 float Max[8] = {1,1,1,1,1,1,1,1};
@@ -54,47 +54,49 @@ void swap(uint32 *a,uint32 *b)
 
 void LV_Sample(void)                             // adc采集函数
 {
-//    for (uint8 h=0;h<=7;h++)
-//    {
-//        for(uint8 i=0;i<=SampleTimes-1;i++)
-//        {
-//         /*获取采样初值*/
-//           // LV_Temp[h][i] = ADC_Get(ADC_0, channel_name[h], ADC_8BIT);
-//        }
-//    }
-    for(uint8 i = 0;i<=SampleTimes-1;i++)
+    for (uint8 h=0;h<=7;h++)
     {
-        LV_Temp[0][i] = ADC_Get(ADC_0, ADC0_CH0_A0, ADC_8BIT);
-    }
-    for(uint8 i = 0;i<=SampleTimes-1;i++)
-    {
-        LV_Temp[0][i] = ADC_Get(ADC_0, ADC0_CH1_A1, ADC_8BIT);
-    }
-    for(uint8 i = 0;i<=SampleTimes-1;i++)
-    {
-        LV_Temp[0][i] = ADC_Get(ADC_0, ADC0_CH2_A2, ADC_8BIT);
-    }
-    for(uint8 i = 0;i<=SampleTimes-1;i++)
-    {
-        LV_Temp[0][i] = ADC_Get(ADC_0, ADC0_CH3_A3, ADC_8BIT);
-    }
-    for(uint8 i = 0;i<=SampleTimes-1;i++)
-    {
-        LV_Temp[0][i] = ADC_Get(ADC_0, ADC0_CH4_A4, ADC_8BIT);
-    }
-    for(uint8 i = 0;i<=SampleTimes-1;i++)
-    {
-        LV_Temp[0][i] = ADC_Get(ADC_0, ADC0_CH5_A5, ADC_8BIT);
-    }
-    for(uint8 i = 0;i<=SampleTimes-1;i++)
-    {
-        LV_Temp[0][i] = ADC_Get(ADC_0, ADC0_CH6_A6, ADC_8BIT);
+        for(uint8 i=0;i<=SampleTimes-1;i++)
+        {
+         /*获取采样初值*/
+            LV_Temp[h][i] = ADC_Get(channel_adc[h], channel_name[h], ADC_8BIT);
 
+        }
     }
-    for(uint8 i = 0;i<=SampleTimes-1;i++)
-    {
-        LV_Temp[0][i] = ADC_Get(ADC_0, ADC0_CH7_A7, ADC_8BIT);
-    }
+
+//    for(uint8 i = 0;i<=SampleTimes-1;i++)
+//    {
+//        LV_Temp[0][i] = ADC_Get(ADC_0, ADC0_CH0_A0, ADC_8BIT);
+//    }
+//    for(uint8 i = 0;i<=SampleTimes-1;i++)
+//    {
+//        LV_Temp[1][i] = ADC_Get(ADC_0, ADC0_CH1_A1, ADC_8BIT);
+//    }
+//    for(uint8 i = 0;i<=SampleTimes-1;i++)
+//    {
+//        LV_Temp[2][i] = ADC_Get(ADC_0, ADC0_CH2_A2, ADC_8BIT);
+//    }
+//    for(uint8 i = 0;i<=SampleTimes-1;i++)
+//    {
+//        LV_Temp[3][i] = ADC_Get(ADC_0, ADC0_CH3_A3, ADC_8BIT);
+//    }
+//    for(uint8 i = 0;i<=SampleTimes-1;i++)
+//    {
+//        LV_Temp[4][i] = ADC_Get(ADC_0, ADC0_CH4_A4, ADC_8BIT);
+//    }
+//    for(uint8 i = 0;i<=SampleTimes-1;i++)
+//    {
+//        LV_Temp[5][i] = ADC_Get(ADC_0, ADC0_CH5_A5, ADC_8BIT);
+//    }
+//    for(uint8 i = 0;i<=SampleTimes-1;i++)
+//    {
+//        LV_Temp[6][i] = ADC_Get(ADC_0, ADC0_CH6_A6, ADC_8BIT);
+//
+//    }
+//    for(uint8 i = 0;i<=SampleTimes-1;i++)
+//    {
+//        LV_Temp[7][i] = ADC_Get(ADC_0, ADC0_CH7_A7, ADC_8BIT);
+//    }
 }
 
 
@@ -137,16 +139,21 @@ void LV_Get_Val(void)//约0.3mS                  //对采集的值滤波
            LV[k] = MinLVGot;
         }
     }
-    //归一化处理
-    if(!send_data_flag)
+    for(uint8 i= 0;i<=7;i++)
     {
-        for(uint8 i= 0;i<=7;i++)
-        {
-            //暂时去掉归一化 AD[i] = (100*LV[i])/Max[i];//(K = 100)
-            AD[i] = LV[i];
-        }
-        send_data_flag=1;
+        //暂时去掉归一化 AD[i] = (100*LV[i])/Max[i];//(K = 100)
+        AD[i] = LV[i];
     }
+///****************************传数据****************************************/
+//    if(!send_data_flag)
+//    {
+//        for(uint8 i= 0;i<=7;i++)
+//        {
+//            //暂时去掉归一化 AD[i] = (100*LV[i])/Max[i];//(K = 100)
+//            AD[i] = LV[i];
+//        }
+//        send_data_flag=1;
+//    }
 }
 
 void get_err(void)
@@ -156,7 +163,7 @@ void get_err(void)
    //竖横电感差比积，右减左+10减小竖电感差比积抖动
    err_ad_now[1]=(AD[3]-AD[2])/(AD[3]*AD[2]+10);
    //给竖电感较小的权重
-   err_synthetical_now=0.3*err_ad_now[1]+1*err_ad_now[0];
+   err_synthetical_now=0*err_ad_now[1]+1*err_ad_now[0];
 }
 
 
@@ -178,11 +185,11 @@ void recognize_road(void)
    {
        type_of_road=10;
    }
-   if (AD[6]>=170&&AD[4]-AD[5]>10)
+   if (AD[6]>=170&&AD[0]-AD[1]>10)
    {
        type_of_road=20;
    }
-   if (AD[6]>=170&&AD[4]-AD[5]<-10)
+   if (AD[6]>=170&&AD[0]-AD[1]<-10)
    {
        type_of_road=21;
    }
@@ -275,19 +282,19 @@ void Send_Data(void)
         send_buff[8]=(uint8)AD[6]-128;
         send_buff[9]=(uint8)(128*(pwm_servo-servo_mid)/1.8);
         send_buff[10]=0x5a;
-        SmartCar_Uart_Upload(send_buff,11);
+//        SmartCar_Uart_Upload(send_buff,11);
         send_data_flag=0;
     }
 }
 
 void Elec_process(void)
 {
-//    LV_Sample();//滤波
-//    LV_Get_Val();//需用到归一化的最大值
-//    recognize_road();
-//    get_err();
-//    out_of_road();
-    Send_Data();
+    LV_Sample();
+    LV_Get_Val();
+    recognize_road();
+    get_err();
+    out_of_road();
+//    Send_Data();
 }
 
 

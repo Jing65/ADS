@@ -150,7 +150,7 @@ void CreatMenu(void)//**创建并插入一个新项需要增加一个新ITEMID枚举项***
     InsertItem(Item, AD_, AD_14);
     InsertItem(Item, AD_, AD_15);
     InsertItem(Item, AD_, AD_16);
-    Item[Moto_Goal] = CreatItem(paraF_item, "Moto_Goal", -90, 90);
+    Item[Moto_Goal] = CreatItem(paraF_item, "Moto_Goal", 0, 4);
     Item[KP_S] = CreatItem(paraF_item, "KP_S", -90, 90);
     Item[KD_S] = CreatItem(paraF_item, "KD_S", 0, 20);
     Item[LIMIT_S] = CreatItem(paraF_item, "LIMIT_S", 0, 20);
@@ -188,20 +188,33 @@ void CreatMenu(void)//**创建并插入一个新项需要增加一个新ITEMID枚举项***
     InsertItem(Item, UNUSE, U_5);
 }
 
-
-void DataUpdate(void)
-{
-    Item[MID_SERVO].item_data.intData=(int16)(servo_mid*100);
-     KP_m=Item[KP_M].item_data.floatData;
-     KI_m=Item[KI_M].item_data.floatData;
-}
-
 void MenuInit(void)
 {
+    Item[Moto_Goal].item_data.floatData=Moto_Speed_Goal_Set;
+    Item[KI_M].item_data.floatData=KI_m;
     Item[MID_SERVO].item_data.intData=(int16)(servo_mid*100);
     Item[KP_M].item_data.floatData=KP_m;
     Item[KI_M].item_data.floatData=KI_m;
 }
+
+void DataUpdate(void)
+{
+     Item[AD_1].item_data.floatData =AD[0];
+     Item[AD_2].item_data.floatData =AD[1];
+     Item[AD_3].item_data.floatData =AD[2];
+     Item[AD_4].item_data.floatData =AD[3];
+     Item[AD_5].item_data.floatData =AD[4];
+     Item[AD_6].item_data.floatData =AD[5];
+     Item[AD_7].item_data.floatData =AD[6];
+     Item[AD_8].item_data.floatData =AD[7];
+//     Item[AD_9].item_data.floatData =AD[8];
+//     Item[AD_1].item_data.floatData =AD[9];
+     Moto_Speed_Goal_Set=Item[Moto_Goal].item_data.floatData;
+     KP_m=Item[KP_M].item_data.floatData;
+     KI_m=Item[KI_M].item_data.floatData;
+}
+
+
 //-------------------------------------------------------------------------------------------------------------------
 //  @brief        检测按键
 //  @param

@@ -22,6 +22,7 @@ extern float KP_m;
 extern float KI_m;
 extern float pwm_servo;
 extern float servo_mid;
+extern float Moto_Speed_Goal_Set;
 //extern float Moto_Speed_Goal_Set;
 void Servo_Elec(void);
 void Delay_Start(void);

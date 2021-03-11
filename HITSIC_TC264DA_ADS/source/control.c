@@ -18,6 +18,7 @@ static float pwm_moto = 0;
 //static float pwm_moto_goal = 30;//电机速度（用于菜单调节）
 static float pwm_moto_add = 0;//电机PID控制增量
 static float Moto_Speed_Goal=0;//用于控制和Wifi上位机中的目标速度
+float Moto_Speed_Goal_Set=2.5;
 static float Moto_Speed_Real;//实际电机速度
 static float Error_Moto_Now;//电机现在error
 static float Error_Moto_Last;//电机前一个error
@@ -29,34 +30,16 @@ static float LIMIT_MO = 80;//需要改（补钙电机可能不动）
 
 void Moto_Speed(void)//电机控制
 {
-//    if(If_Start == 0)
-//    {
-//        Moto_Speed_Goal = 0;
-//        If_Start = 0;
-//    }
-//    else
-//    {
-//        Moto_Speed_Goal = Moto_Speed_Goal_Set;
-//    }
-//
-   float Moto_Speed_Goal_Set = 0;//菜单设置中的目标速度
-   static uint32 flag=0;
-   flag++;
-            if(flag<=1000)
-            {
-                Moto_Speed_Goal_Set = 2.5;
-            }
-            if(flag > 1000 && flag < 2000)
-            {
-                Moto_Speed_Goal_Set = 0;
-            }
-            if(flag == 2000)
-            {
-                Moto_Speed_Goal_Set = 2.5;
-                flag = 0;
-            }
-
-    Moto_Speed_Goal = Moto_Speed_Goal_Set;
+    if(If_Start == 0)
+    {
+        Moto_Speed_Goal = 0;
+        If_Start = 0;
+    }
+    else
+    {
+        Moto_Speed_Goal = Moto_Speed_Goal_Set;
+    }
+//    Moto_Speed_Goal = Moto_Speed_Goal_Set;
     //电机PID控制
     Moto_Speed_Real = 0.0001 * (float)SmartCar_Encoder_Get(GPT12_T2) * Meter_every_Round / 0.005;
     SmartCar_Encoder_Clear(GPT12_T2);//清除编码器

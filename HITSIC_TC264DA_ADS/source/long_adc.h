@@ -29,14 +29,12 @@ void get_Wifi_AD(void);
 void Elec_process(void);
 void recognize_road(void);
 extern float err_synthetical_now;
-extern float LV[8];
 extern float AD[8];
-extern int If_Start;
+extern uint8 If_Start;
 extern float Max[8];//用于存储电感的最大值做归一化准备
 extern _Bool Flag_Find_Max;
 extern float Wifi_Data[10];//上位机传回的数组
 extern int type_of_road;
-
 
 
 #endif /* SOURCE_LONG_ADC_H_ */

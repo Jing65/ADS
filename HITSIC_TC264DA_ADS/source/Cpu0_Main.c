@@ -71,12 +71,13 @@ int core0_main(void)
     PIT_init();
 ////    //编码器初始化
     Encoder_init();
-////    //外部中断初始化
+//    //外部中断初始化
 //    Eru_init();
-////    //串口初始化
+//    //串口初始化
 //    Uart_init();
-////    //创建菜单并完成参量菜单项的赋值
+//    //创建菜单并完成参量菜单项的赋值
     elec_init();
+
     CreatMenu();
     //给状态菜单项赋值
     MenuInit();
@@ -93,8 +94,24 @@ int core0_main(void)
         PrintMenu();
         if(!GPIO_Read(P20,12))
         PrintMenu();
+        if(If_Start == 0)
+        {
+               if(!GPIO_Read(P20,0))
+              {
+                 Delay_ms(STM1,3000);
+                 If_Start = 1;
+              }
+        }
+        if(If_Start == 1)
+        {
+               if(!GPIO_Read(P20,8))
+              {
+                 Delay_ms(STM1,200);
+                 If_Start = 0;
+              }
+        }
 //        num_of_encoder = SmartCar_Encoder_Get(GPT12_T2);
-//        Elec_process();
+        Elec_process();
 
     }
 }
@@ -104,7 +121,6 @@ IFX_INTERRUPT(cc60_pit_ch0_isr, 0, CCU6_0_CH0_ISR_PRIORITY)
 {
     enableInterrupts();//开启中断嵌套
     PIT_CLEAR_FLAG(CCU6_0, PIT_CH0);
-
 }
 
 
@@ -112,7 +128,6 @@ IFX_INTERRUPT(cc60_pit_ch1_isr, 0, CCU6_0_CH1_ISR_PRIORITY)
 {
     enableInterrupts();//开启中断嵌套
     PIT_CLEAR_FLAG(CCU6_0, PIT_CH1);
-
 }
 
 IFX_INTERRUPT(cc61_pit_ch0_isr, 0, CCU6_1_CH0_ISR_PRIORITY)
@@ -128,6 +143,5 @@ IFX_INTERRUPT(cc61_pit_ch1_isr, 0, CCU6_1_CH1_ISR_PRIORITY)
     enableInterrupts();//开启中断嵌套
     Servo_Elec();
     PIT_CLEAR_FLAG(CCU6_1, PIT_CH1);
-
 }
 #pragma section all restore

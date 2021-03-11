@@ -13,7 +13,7 @@
 #include "SmartCar_Oled.h"
 #include "SmartCar_Systick.h"
 #include "SmartCar_GPIO.h"
-
+#include "long_adc.h"
 
 #define NAME_MAX 20//菜单项名字长度的极限
 #define ITEM_MAX 60//菜单项数目的极限

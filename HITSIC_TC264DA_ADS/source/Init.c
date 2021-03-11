@@ -9,15 +9,16 @@
 
 void elec_init(void)//ADC初始化
 {
-    ADC_Init(ADC_0, ADC0_CH0_A0);
-    ADC_Init(ADC_0, ADC0_CH1_A1);
-    ADC_Init(ADC_0, ADC0_CH2_A2);
+    ADC_Init(ADC_2, ADC2_CH4_A36);
     ADC_Init(ADC_0, ADC0_CH3_A3);
-    ADC_Init(ADC_0, ADC0_CH4_A4);
+    ADC_Init(ADC_1, ADC1_CH8_A24);
     ADC_Init(ADC_0, ADC0_CH5_A5);
-    ADC_Init(ADC_0, ADC0_CH6_A6);
+    ADC_Init(ADC_1, ADC1_CH5_A21);
+    ADC_Init(ADC_0, ADC0_CH7_A7);
+    ADC_Init(ADC_1, ADC1_CH1_A17);
+    ADC_Init(ADC_0, ADC0_CH1_A1);
 }
-
+//uint8 channel_name[8]={ADC2_CH4_A36,ADC0_CH3_A3,ADC1_CH8_A24,ADC0_CH5_A5,ADC1_CH5_A21,ADC0_CH7_A7,ADC1_CH1_A17,ADC0_CH1_A1};
 //uint8 ai_data_flag;//1：ad数据采集完成   0：ad数据未采集完成
 //int8 ad_data[7];   //ad数据
 
@@ -44,7 +45,7 @@ void PIT_init(void)
 {
     Pit_Init_ms(CCU6_1, PIT_CH0, 5);//电机中断初始化
     Pit_Init_ms(CCU6_1, PIT_CH1, 20);//舵机中断初始化，中断优先级最低
-//    Pit_Init_us(CCU6_0, PIT_CH0, 100);//按键检测中断初始化，中断优先级最低
+//    Pit_Init_ms(CCU6_0, PIT_CH0, 100);//按键检测中断初始化，中断优先级最低
 }
 
 void Encoder_init(void)
