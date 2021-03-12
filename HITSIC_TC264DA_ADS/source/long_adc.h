@@ -10,6 +10,11 @@
 
 #include "Ifx_Types.h"
 
+
+#define AD_NUM 7
+#define AI_NUM 9
+#define SampleTimes 40
+#define SampleTimes_AI 40
 /**********************************************************************************************************************
 *  @brief      获取AD转化值
 *  @param      base               ADC模块选择
@@ -29,7 +34,7 @@ void get_Wifi_AD(void);
 void Elec_process(void);
 void recognize_road(void);
 extern float err_synthetical_now;
-extern float AD[8];
+extern float AD[(AD_NUM+AI_NUM)];
 extern uint8 If_Start;
 extern float Max[8];//用于存储电感的最大值做归一化准备
 extern _Bool Flag_Find_Max;

@@ -199,14 +199,10 @@ void MenuInit(void)
 
 void DataUpdate(void)
 {
-     Item[AD_1].item_data.floatData =AD[0];
-     Item[AD_2].item_data.floatData =AD[1];
-     Item[AD_3].item_data.floatData =AD[2];
-     Item[AD_4].item_data.floatData =AD[3];
-     Item[AD_5].item_data.floatData =AD[4];
-     Item[AD_6].item_data.floatData =AD[5];
-     Item[AD_7].item_data.floatData =AD[6];
-     Item[AD_8].item_data.floatData =AD[7];
+    for(uint8 i=0;i<16;i++)
+    {
+      Item[(i+AD_1)].item_data.floatData =AD[i];
+    }
 //     Item[AD_9].item_data.floatData =AD[8];
 //     Item[AD_1].item_data.floatData =AD[9];
      Moto_Speed_Goal_Set=Item[Moto_Goal].item_data.floatData;

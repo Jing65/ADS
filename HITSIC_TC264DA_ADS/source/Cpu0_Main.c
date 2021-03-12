@@ -111,7 +111,7 @@ int core0_main(void)
               }
         }
 //        num_of_encoder = SmartCar_Encoder_Get(GPT12_T2);
-        Elec_process();
+//        Elec_process();
 
     }
 }

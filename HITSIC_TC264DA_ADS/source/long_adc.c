@@ -21,24 +21,66 @@
 #include "SmartCar_Uart.h"
 
 
-const uint8 SampleTimes=40;
-
-uint32 LV_Temp[8][40];
-static float LV[8]={0};
-float AD[8]={0};
+//AI采数数组和控制采数数组分开
+uint32 LV_control[AD_NUM][SampleTimes];
+uint32 LV_AI[AI_NUM][SampleTimes_AI];
+float transfer[AD_NUM];
+float transfer_AI[AI_NUM];
+float AD[(AD_NUM+AI_NUM)];
 float MinLVGot=0.05;
 float err_ad_now[2]={0,0};
 float err_synthetical_now = 0;
 _Bool Flag_Find_Max = 1;//一开始不开始寻找
 uint8 If_Start = 0;//延时发车
-//原来测好的ad口
-uint8 channel_name[8]={ADC2_CH4_A36,ADC0_CH3_A3,ADC1_CH8_A24,ADC0_CH5_A5,ADC1_CH5_A21,ADC0_CH7_A7,ADC1_CH1_A17,ADC0_CH1_A1};
-uint8 channel_adc[8]={ADC_2,ADC_0,ADC_1,ADC_0,ADC_1,ADC_0,ADC_1,ADC_0};
+//控制ad采数数组
+uint8 channel_name[AD_NUM]={ADC2_CH4_A36,ADC0_CH3_A3,ADC1_CH8_A24,ADC0_CH5_A5,ADC1_CH5_A21,ADC0_CH7_A7,ADC1_CH1_A17};
+uint8 channel_adc[AD_NUM]={ADC_2,ADC_0,ADC_1,ADC_0,ADC_1,ADC_0,ADC_1};
 //使AD通道 0到6分别对应 左1横、右一横、左竖、右竖、左二横、右二横、中间电感
 
+//AI电感采数数组
+uint8 channel_AI[AI_NUM]={ADC0_CH1_A1,ADC1_CH9_A25,ADC1_CH4_A20,ADC1_CH0_A16,ADC0_CH8_A8,ADC0_CH6_A6,ADC0_CH4_A4,ADC0_CH2_A2,ADC0_CH0_A0};
+uint8 channel_AI_adc[AI_NUM]={ADC_0,ADC_1,ADC_1,ADC_1,ADC_0,ADC_0,ADC_0,ADC_0,ADC_0};
+
+//typedef enum
+//{
+//    //ADC0可选引脚
+//    ADC0_CH0_A0   = 0*16 + 0,
+//    ADC0_CH1_A1,
+//    ADC0_CH2_A2,
+//    ADC0_CH3_A3,
+//    ADC0_CH4_A4,
+//    ADC0_CH5_A5,
+//    ADC0_CH6_A6,
+//    ADC0_CH7_A7,
+//    ADC0_CH8_A8,
+//    ADC0_CH10_A10 = 0*16 + 10,
+//    ADC0_CH11_A11,
+//    ADC0_CH12_A12,
+//    ADC0_CH13_A13,
+//
+//    //ADC1可选引脚
+//    ADC1_CH0_A16  = 1*16 + 0,
+//    ADC1_CH1_A17  = 1*16 + 1,
+//    ADC1_CH4_A20  = 1*16 + 4,
+//    ADC1_CH5_A21  = 1*16 + 5,
+//    ADC1_CH8_A24  = 1*16 + 8,
+//    ADC1_CH9_A25  = 1*16 + 9,
+//
+//    //ADC2可选引脚
+//    ADC2_CH3_A35  = 2*16 + 3,
+//    ADC2_CH4_A36,
+//    ADC2_CH5_A37,
+//    ADC2_CH6_A38,
+//    ADC2_CH7_A39,
+//    ADC2_CH10_A44 = 2*16 + 10,
+//    ADC2_CH11_A45,
+//    ADC2_CH12_A46,
+//    ADC2_CH13_A47,
+//    ADC2_CH14_A48,
+//    ADC2_CH15_A49,
+//}VADC_CHN_enum;
+
 //上位机传回的数组
-float Wifi_Data[10] = {0};
-float Max[8] = {1,1,1,1,1,1,1,1};
 int type_of_road = 0;
 int sum_of_SCFTM=0;
 _Bool send_data_flag=0;//1：ad数据采集完成   0：ad数据未采集完成
@@ -54,95 +96,109 @@ void swap(uint32 *a,uint32 *b)
 
 void LV_Sample(void)                             // adc采集函数
 {
-    for (uint8 h=0;h<=7;h++)
+    for (uint8 h=0;h<AD_NUM;h++)
     {
         for(uint8 i=0;i<=SampleTimes-1;i++)
         {
          /*获取采样初值*/
-            LV_Temp[h][i] = ADC_Get(channel_adc[h], channel_name[h], ADC_8BIT);
+            LV_control[h][i] = ADC_Get(channel_adc[h], channel_name[h], ADC_8BIT);
 
         }
     }
+    for (uint8 h=0;h<AI_NUM;h++)
+    {
+        for(uint8 i=0;i<=SampleTimes_AI-1;i++)
+        {
+         /*获取采样初值*/
+            LV_AI[h][i] = ADC_Get(channel_AI_adc[h], channel_AI[h], ADC_8BIT);
+        }
+    }
 
-//    for(uint8 i = 0;i<=SampleTimes-1;i++)
-//    {
-//        LV_Temp[0][i] = ADC_Get(ADC_0, ADC0_CH0_A0, ADC_8BIT);
-//    }
-//    for(uint8 i = 0;i<=SampleTimes-1;i++)
-//    {
-//        LV_Temp[1][i] = ADC_Get(ADC_0, ADC0_CH1_A1, ADC_8BIT);
-//    }
-//    for(uint8 i = 0;i<=SampleTimes-1;i++)
-//    {
-//        LV_Temp[2][i] = ADC_Get(ADC_0, ADC0_CH2_A2, ADC_8BIT);
-//    }
-//    for(uint8 i = 0;i<=SampleTimes-1;i++)
-//    {
-//        LV_Temp[3][i] = ADC_Get(ADC_0, ADC0_CH3_A3, ADC_8BIT);
-//    }
-//    for(uint8 i = 0;i<=SampleTimes-1;i++)
-//    {
-//        LV_Temp[4][i] = ADC_Get(ADC_0, ADC0_CH4_A4, ADC_8BIT);
-//    }
-//    for(uint8 i = 0;i<=SampleTimes-1;i++)
-//    {
-//        LV_Temp[5][i] = ADC_Get(ADC_0, ADC0_CH5_A5, ADC_8BIT);
-//    }
-//    for(uint8 i = 0;i<=SampleTimes-1;i++)
-//    {
-//        LV_Temp[6][i] = ADC_Get(ADC_0, ADC0_CH6_A6, ADC_8BIT);
-//
-//    }
-//    for(uint8 i = 0;i<=SampleTimes-1;i++)
-//    {
-//        LV_Temp[7][i] = ADC_Get(ADC_0, ADC0_CH7_A7, ADC_8BIT);
-//    }
 }
 
 
 void LV_Get_Val(void)//约0.3mS                  //对采集的值滤波
 {
     //有时会在0-65535(255)间跳动
-    for(uint8 i=0;i<=7;i++)
+    for(uint8 i=0;i<AD_NUM;i++)
     {
         for(uint8 j=0;j<=SampleTimes-1;j++)
         {
-             if(LV_Temp[i][j]>500)//剔除毛刺信号
+             if(LV_control[i][j]>500)//剔除毛刺信号
              {
-                 LV_Temp[i][j]=500;
+                 LV_control[i][j]=500;
+             }
+        }
+    }
+    for(uint8 i=0;i<AI_NUM;i++)
+    {
+        for(uint8 j=0;j<=SampleTimes_AI-1;j++)
+        {
+             if(LV_AI[i][j]>500)//剔除毛刺信号
+             {
+                 LV_AI[i][j]=500;
              }
         }
     }
     //排序
-    for(uint8 k=0;k<=7;k++)
+    for(uint8 k=0;k<AD_NUM;k++)
     {
         for(uint8 i=0;i<=SampleTimes-2;i++)
         {
             for(uint8 j=i+1;j<=SampleTimes-1;j++)
             {
-                if(LV_Temp[k][i]>LV_Temp[k][j])
-                swap(&LV_Temp[k][i],&LV_Temp[k][j]);//交换，swap函数自己写
+                if(LV_control[k][i]>LV_control[k][j])
+                swap(&LV_control[k][i],&LV_control[k][j]);//交换，swap函数自己写
+            }
+        }
+    }
+    for(uint8 k=0;k<AI_NUM;k++)
+    {
+        for(uint8 i=0;i<=SampleTimes_AI-2;i++)
+        {
+            for(uint8 j=i+1;j<=SampleTimes_AI-1;j++)
+            {
+                if(LV_AI[k][i]>LV_AI[k][j])
+                swap(&LV_AI[k][i],&LV_AI[k][j]);//交换，swap函数自己写
             }
         }
     }
 
-    for(uint8 k=0;k<=7;k++)
+
+
+    for(uint8 k=0;k<AD_NUM;k++)
     {
-        LV[k]=0;
         for(uint8 i=4;i<=SampleTimes-5;i++)
         {
-             LV[k]+=(float)LV_Temp[k][i];
+            transfer[k]+=(float)LV_control[k][i];
         }
-        LV[k]=LV[k]/(SampleTimes-8);
-        if( LV[k] < MinLVGot )
+        transfer[k]=transfer[k]/(SampleTimes-8);
+        if( transfer[k] < MinLVGot )
         {
-           LV[k] = MinLVGot;
+            transfer[k] = MinLVGot;
         }
     }
-    for(uint8 i= 0;i<=7;i++)
+    for(uint8 k=0;k<AI_NUM;k++)
+    {
+        for(uint8 i=4;i<=SampleTimes-5;i++)
+        {
+            transfer_AI[k]+=(float)LV_AI[k][i];
+        }
+        transfer_AI[k]=transfer_AI[k]/(SampleTimes-8);
+        if( transfer_AI[k] < MinLVGot )
+        {
+            transfer_AI[k] = MinLVGot;
+        }
+    }
+    for(uint8 i= 0;i<AD_NUM;i++)
     {
         //暂时去掉归一化 AD[i] = (100*LV[i])/Max[i];//(K = 100)
-        AD[i] = LV[i];
+        AD[i] = transfer[i];
+    }
+    for(uint8 i= 0;i<AI_NUM;i++)
+    {
+        //暂时去掉归一化 AD[i] = (100*LV[i])/Max[i];//(K = 100)
+        AD[i+AD_NUM] = transfer_AI[i];
     }
 ///****************************传数据****************************************/
 //    if(!send_data_flag)

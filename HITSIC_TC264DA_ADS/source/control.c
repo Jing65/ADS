@@ -95,40 +95,40 @@ void Moto_Speed(void)//电机控制
 
 void Servo_Elec(void)//电磁舵机控制
 {
-//    if(type_of_road==0)//直道和45度弯
-//    {
-//        pwm_servo_variation = KP_S_E * err_synthetical_now  + KD_S_E*(err_synthetical_now - err_synthetical_last );
-//        if(pwm_servo_variation > LIMIT_S)
-//        {
-//            pwm_servo_variation = LIMIT_S;
-//        }
-//        else if(pwm_servo_variation < -LIMIT_S)
-//        {
-//            pwm_servo_variation = -LIMIT_S;
-//        }
-//        err_synthetical_last = err_synthetical_now;
-//        pwm_servo = pwm_servo_variation+servo_mid;
-//    }
-//    else if (type_of_road==11)//1为直角弯道1为右拐
-//    {
-//        pwm_servo =servo_mid+LIMIT_S;
-//    }
-//    else if (type_of_road==10)//1为直角弯道0为左拐
-//    {
-//         pwm_servo =servo_mid-LIMIT_S;
-//    }
-//    else if (type_of_road==20)//20左环
-//    {
-//        pwm_servo =servo_mid-0.7*LIMIT_S;
-//    }
-//    else if (type_of_road==21)//21右环
-//    {
-//        pwm_servo =servo_mid+0.7*LIMIT_S;
-//    }
-//    SmartCar_Gtm_Pwm_Setduty(&Servo_PIN, pwm_servo);
-    /*********************************测舵机中值**********************************/
-    uint32 pwm_servo_l=(uint32)(servo_mid*100);
-    SmartCar_Gtm_Pwm_Setduty(&Servo_PIN, pwm_servo_l);
+    if(type_of_road==0)//直道和45度弯
+    {
+        pwm_servo_variation = KP_S_E * err_synthetical_now  + KD_S_E*(err_synthetical_now - err_synthetical_last );
+        if(pwm_servo_variation > LIMIT_SE)
+        {
+            pwm_servo_variation = LIMIT_SE;
+        }
+        else if(pwm_servo_variation < -LIMIT_SE)
+        {
+            pwm_servo_variation = -LIMIT_SE;
+        }
+        err_synthetical_last = err_synthetical_now;
+        pwm_servo = pwm_servo_variation+servo_mid;
+    }
+    else if (type_of_road==11)//1为直角弯道1为右拐
+    {
+        pwm_servo =servo_mid+LIMIT_SE;
+    }
+    else if (type_of_road==10)//1为直角弯道0为左拐
+    {
+         pwm_servo =servo_mid-LIMIT_SE;
+    }
+    else if (type_of_road==20)//20左环
+    {
+        pwm_servo =servo_mid-0.7*LIMIT_SE;
+    }
+    else if (type_of_road==21)//21右环
+    {
+        pwm_servo =servo_mid+0.7*LIMIT_SE;
+    }
+    SmartCar_Gtm_Pwm_Setduty(&Servo_PIN, (uint32)(pwm_servo*100));
+//    /*********************************测舵机中值**********************************/
+//    uint32 pwm_servo_l=(uint32)(servo_mid*100);
+//    SmartCar_Gtm_Pwm_Setduty(&Servo_PIN, pwm_servo_l);
 }
 
 
