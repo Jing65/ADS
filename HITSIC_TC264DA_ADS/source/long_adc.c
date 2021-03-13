@@ -349,7 +349,7 @@ void Elec_process(void)
     LV_Get_Val();
     recognize_road();
     get_err();
-    out_of_road();
+//    out_of_road();
 //    Send_Data();
 }
 

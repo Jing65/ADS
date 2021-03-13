@@ -41,7 +41,7 @@ void Moto_Speed(void)//电机控制
     }
 //    Moto_Speed_Goal = Moto_Speed_Goal_Set;
     //电机PID控制
-    Moto_Speed_Real = 0.0001 * (float)SmartCar_Encoder_Get(GPT12_T2) * Meter_every_Round / 0.005;
+    Moto_Speed_Real = 0.0001 * (float)(-SmartCar_Encoder_Get(GPT12_T2)) * Meter_every_Round / 0.005;
     SmartCar_Encoder_Clear(GPT12_T2);//清除编码器
     Error_Moto_Now = (Moto_Speed_Goal - Moto_Speed_Real);
     pwm_moto_add = ((KP_m * (Error_Moto_Now - Error_Moto_Last)) + (KI_m * Error_Moto_Now));
@@ -61,34 +61,34 @@ void Moto_Speed(void)//电机控制
     //电机输出
     if (pwm_moto>0)
     {
-        SmartCar_Gtm_Pwm_Setduty(&Motor_PIN_0, (uint32)(pwm_moto*100));
-        SmartCar_Gtm_Pwm_Setduty(&Motor_PIN_1, 0);
+        SmartCar_Gtm_Pwm_Setduty(&Motor_PIN_0,0);
+        SmartCar_Gtm_Pwm_Setduty(&Motor_PIN_1,(uint32)(pwm_moto*100));
     }
     else if(pwm_moto<0)
     {
-        SmartCar_Gtm_Pwm_Setduty(&Motor_PIN_0, 0);
-        SmartCar_Gtm_Pwm_Setduty(&Motor_PIN_1, (uint32)(-pwm_moto*100));
+        SmartCar_Gtm_Pwm_Setduty(&Motor_PIN_0,(uint32)(-pwm_moto*100));
+        SmartCar_Gtm_Pwm_Setduty(&Motor_PIN_1,0);
     }
 
-///**************************************************开环测电机*************************************************/
-////    static uint32 flag=0;
-////    flag++;
-////        if(flag<=1000)
-////        {
-////            pwm_moto = 4000;
-////        }
-////        if(flag > 1000 && flag < 2000)
-////        {
-////            pwm_moto = 0;
-////        }
-////        if(flag == 2000)
-////        {
-////            pwm_moto = 4000;
-////            flag = 0;
-////        }
-////
-////         SmartCar_Gtm_Pwm_Setduty(&Motor_PIN_0, pwm_moto);
-////         SmartCar_Gtm_Pwm_Setduty(&Motor_PIN_1, 0);
+/**************************************************开环测电机*************************************************/
+//    static uint32 flag=0;
+//    flag++;
+//        if(flag<=1000)
+//        {
+//            pwm_moto = 4000;
+//        }
+//        if(flag > 1000 && flag < 2000)
+//        {
+//            pwm_moto = 0;
+//        }
+//        if(flag == 2000)
+//        {
+//            pwm_moto = 4000;
+//            flag = 0;
+//        }
+//
+//         SmartCar_Gtm_Pwm_Setduty(&Motor_PIN_0, pwm_moto);
+//         SmartCar_Gtm_Pwm_Setduty(&Motor_PIN_1, 0);
 
 }
 
