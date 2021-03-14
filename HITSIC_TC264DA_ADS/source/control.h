@@ -23,6 +23,9 @@ extern float KI_m;
 extern float pwm_servo;
 extern float servo_mid;
 extern float Moto_Speed_Goal_Set;
+extern float KP_S_E;//电磁舵机调参
+extern float KD_S_E;//电磁舵机调参
+extern float LIMIT_SE;
 //extern float Moto_Speed_Goal_Set;
 void Servo_Elec(void);
 void Delay_Start(void);

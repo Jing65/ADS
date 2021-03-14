@@ -64,18 +64,18 @@ int core0_main(void)
     SmartCar_Oled_Init();
     //GPIO初始化，20.9保存flash提示灯
 
-//    GPIO_Init(P02,8, PUSHPULL,0);
-//    //PWM初始化
+    GPIO_Init(P02,8, PUSHPULL,0);
+   //PWM初始化
     PWM_init();
-////    //定时中断初始化
+    //定时中断初始化
     PIT_init();
-////    //编码器初始化
+    //编码器初始化
     Encoder_init();
-//    //外部中断初始化
+    //外部中断初始化
 //    Eru_init();
-//    //串口初始化
+    //串口初始化
 //    Uart_init();
-//    //创建菜单并完成参量菜单项的赋值
+    //创建菜单并完成参量菜单项的赋值
     elec_init();
 
     CreatMenu();

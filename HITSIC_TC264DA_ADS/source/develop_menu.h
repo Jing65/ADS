@@ -86,7 +86,6 @@ struct ITEM
 typedef struct ITEM item;
 
 extern item Item[ITEM_MAX];
-extern cardata CAR[PARA_MAX];
 
 
 item CreatItem(itemtype type, char* name, int16 min, int16 max);

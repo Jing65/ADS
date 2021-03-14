@@ -12,7 +12,7 @@ uint16 OrderNum = 0;  //指令型菜单项的数目
 uint16 CurItem = 1;   //当前菜单项的ID
 uint16 CurMenu = MENU;//当前菜单的ID，初始化为1
 item Item[ITEM_MAX];  //菜单项结构体数组
-cardata CAR[PARA_MAX];
+static cardata CAR[PARA_MAX];
 
 
 item CreatItem(itemtype type, char* name, int16 min, int16 max)
@@ -151,11 +151,11 @@ void CreatMenu(void)//**创建并插入一个新项需要增加一个新ITEMID枚举项***
     InsertItem(Item, AD_, AD_15);
     InsertItem(Item, AD_, AD_16);
     Item[Moto_Goal] = CreatItem(paraF_item, "Moto_Goal", 0, 4);
-    Item[KP_S] = CreatItem(paraF_item, "KP_S", -90, 90);
-    Item[KD_S] = CreatItem(paraF_item, "KD_S", 0, 20);
-    Item[LIMIT_S] = CreatItem(paraF_item, "LIMIT_S", 0, 20);
-    Item[MID_SERVO] = CreatItem(stateI_item, "mid_servo", 0, 1500);
-    Item[SERVO_1] = CreatItem(paraF_item, "RXXX", -500, 500);
+    Item[KP_S] = CreatItem(paraF_item, "KP_S", 0,90);
+    Item[KD_S] = CreatItem(paraF_item, "KD_S", 0,90);
+    Item[LIMIT_S] = CreatItem(paraF_item, "LIMIT_S", 0, 3);
+    Item[MID_SERVO] = CreatItem(paraF_item, "mid_servo", 6, 8);
+    Item[SERVO_1] = CreatItem(stateF_item, "RXXX", -500, 500);
     Item[SERVO_2] = CreatItem(stateF_item, "RXXX", -500, 500);
     InsertItem(Item, STEER, Moto_Goal);
     InsertItem(Item, STEER, KP_S);;
@@ -192,9 +192,13 @@ void MenuInit(void)
 {
     Item[Moto_Goal].item_data.floatData=Moto_Speed_Goal_Set;
     Item[KI_M].item_data.floatData=KI_m;
-    Item[MID_SERVO].item_data.intData=(int16)(servo_mid*100);
+    Item[MID_SERVO].item_data.floatData=servo_mid;
+    Item[KP_S].item_data.floatData=KP_S_E;
+    Item[KD_S].item_data.floatData=KD_S_E;
     Item[KP_M].item_data.floatData=KP_m;
     Item[KI_M].item_data.floatData=KI_m;
+    Item[LIMIT_S].item_data.floatData=LIMIT_SE;
+
 }
 
 void DataUpdate(void)
@@ -203,11 +207,13 @@ void DataUpdate(void)
     {
       Item[(i+AD_1)].item_data.floatData =AD[i];
     }
-//     Item[AD_9].item_data.floatData =AD[8];
-//     Item[AD_1].item_data.floatData =AD[9];
      Moto_Speed_Goal_Set=Item[Moto_Goal].item_data.floatData;
      KP_m=Item[KP_M].item_data.floatData;
      KI_m=Item[KI_M].item_data.floatData;
+     KP_S_E=Item[KP_S].item_data.floatData;
+     KD_S_E=Item[KD_S].item_data.floatData;
+     LIMIT_SE=Item[LIMIT_S].item_data.floatData;
+     servo_mid=Item[MID_SERVO].item_data.floatData;
 }
 
 
@@ -288,10 +294,10 @@ void KeyOperation(key Key)
             }
             else if(CurItem == HOLD)
             {
-//                GPIO_Set(P02,8, 1);
-//                Delay_ms(STM0, 100);
-//                GPIO_Set(P02,8, 0);
-//                iap_erase_page(0x01);
+                GPIO_Set(P02,8, 1);
+                Delay_ms(STM0, 100);
+                GPIO_Set(P02,8, 0);
+//                Sector_Erase(0);
 //                iap_write_bytes(0x01, &CAR[0], PARA_MAX * sizeof(cardata));                            //保存修改的参量
             }
             else if(Item[CurItem].item_type == paraI_item || Item[CurItem].item_type == paraF_item)//进入修改参量界面
