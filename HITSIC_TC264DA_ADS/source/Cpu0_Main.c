@@ -78,6 +78,7 @@ int core0_main(void)
     //创建菜单并完成参量菜单项的赋值
     elec_init();
 
+    Read_flash();
     CreatMenu();
     //给状态菜单项赋值
     MenuInit();

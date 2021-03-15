@@ -9,6 +9,7 @@
 #define SOURCE_DEVELOP_MENU_H_
 
 #include "common.h"
+#include "SmartCar_Flash.h"
 #include "control.h"
 #include "SmartCar_Oled.h"
 #include "SmartCar_Systick.h"
@@ -17,7 +18,7 @@
 
 #define NAME_MAX 20//菜单项名字长度的极限
 #define ITEM_MAX 60//菜单项数目的极限
-#define PARA_MAX 60//参量型菜单项数目的极限
+#define PARA_MAX 40//参量型菜单项数目的极限
 
 
 extern uint16 ItemNum;
@@ -85,8 +86,6 @@ struct ITEM
 };
 typedef struct ITEM item;
 
-extern item Item[ITEM_MAX];
-
 
 item CreatItem(itemtype type, char* name, int16 min, int16 max);
 void InsertItem(item* Item, uint16 root, uint16 item_t);
@@ -100,8 +99,8 @@ void ModifyintData(void);
 void ModifyfloatData(void);
 void PrintintData(int mul,int now_);
 void PrintfloatData(float mul,float now_);
-
-
+void Save_data(void);
+void Read_flash(void);
 
 
 

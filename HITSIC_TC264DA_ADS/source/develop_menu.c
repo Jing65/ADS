@@ -11,8 +11,8 @@ uint16 ParaNum = 0;   //参量型菜单项的数目
 uint16 OrderNum = 0;  //指令型菜单项的数目
 uint16 CurItem = 1;   //当前菜单项的ID
 uint16 CurMenu = MENU;//当前菜单的ID，初始化为1
-item Item[ITEM_MAX];  //菜单项结构体数组
-static cardata CAR[PARA_MAX];
+static item Item[ITEM_MAX];  //菜单项结构体数组
+static uint32 CAR_BUFFER[PARA_MAX];//flash中用来存数据的数组
 
 
 item CreatItem(itemtype type, char* name, int16 min, int16 max)
@@ -37,8 +37,9 @@ item CreatItem(itemtype type, char* name, int16 min, int16 max)
     {
       if(type == paraI_item || type == paraF_item)//参量型菜单项
       {
-          Item.para_ID = (ParaNum++);                 //指令菜单项数加一
-          Item.item_data = CAR[ParaNum];            //将小车的数据给参量型菜单项（对参量型菜单项数据进行初始化）
+          cardata car_init;//指令菜单项数加一
+          Item.para_ID = (ParaNum++);                               //将小车的数据给参量型菜单项（对参量型菜单项数据进行初始化）
+          Item.item_data=car_init;
       }
   }
     return Item;
@@ -198,7 +199,17 @@ void MenuInit(void)
     Item[KP_M].item_data.floatData=KP_m;
     Item[KI_M].item_data.floatData=KI_m;
     Item[LIMIT_S].item_data.floatData=LIMIT_SE;
+}
 
+void Read_flash(void)
+{
+    Moto_Speed_Goal_Set=Page_Read(0,0,float);
+    KP_S_E=Page_Read(0,1,float);
+    KD_S_E=Page_Read(0,2,float);
+    LIMIT_SE=Page_Read(0,3,float);
+    servo_mid=Page_Read(0,4,float);
+    KP_m=Page_Read(0,5,float);
+    KI_m=Page_Read(0,6,float);
 }
 
 void DataUpdate(void)
@@ -216,7 +227,22 @@ void DataUpdate(void)
      servo_mid=Item[MID_SERVO].item_data.floatData;
 }
 
+void Save_data(void)
+{
+    CAR_BUFFER[1]=float_conversion_uint32(Moto_Speed_Goal_Set);
+    CAR_BUFFER[2]=float_conversion_uint32(KP_S_E);
+    CAR_BUFFER[3]=float_conversion_uint32(KD_S_E);
+    CAR_BUFFER[4]=float_conversion_uint32(LIMIT_SE);
+    CAR_BUFFER[5]=float_conversion_uint32(servo_mid);
+    CAR_BUFFER[6]=float_conversion_uint32(KP_m);
+    CAR_BUFFER[7]=float_conversion_uint32(KI_m);
+    Sector_Erase(0);
+    for(uint8 i=0;i<PARA_MAX-1;i++)
+    {
+        Page_Program(0,i,&CAR_BUFFER[i+1]);
+    }
 
+}
 //-------------------------------------------------------------------------------------------------------------------
 //  @brief        检测按键
 //  @param
@@ -294,10 +320,10 @@ void KeyOperation(key Key)
             }
             else if(CurItem == HOLD)
             {
+                Save_data();
                 GPIO_Set(P02,8, 1);
                 Delay_ms(STM0, 100);
                 GPIO_Set(P02,8, 0);
-//                Sector_Erase(0);
 //                iap_write_bytes(0x01, &CAR[0], PARA_MAX * sizeof(cardata));                            //保存修改的参量
             }
             else if(Item[CurItem].item_type == paraI_item || Item[CurItem].item_type == paraF_item)//进入修改参量界面
