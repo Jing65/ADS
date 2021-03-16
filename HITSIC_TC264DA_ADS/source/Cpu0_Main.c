@@ -124,9 +124,12 @@ int core0_main(void)
                  If_Start = 0;
               }
         }
-//        num_of_encoder = SmartCar_Encoder_Get(GPT12_T2);
-          Elec_process();
 
+        get_ai_data();
+        AI_process();
+//        Elec_process();
+
+//≤‚ ‘≥Ã–Ú        num_of_encoder = SmartCar_Encoder_Get(GPT12_T2);
 //          int8 test=-125;
 //          uint8 test_un;
 ////          test_un=(127*(5.55-servo_mid)/1.8);

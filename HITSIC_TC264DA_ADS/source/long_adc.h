@@ -9,7 +9,13 @@
 #define SOURCE_LONG_ADC_H_
 
 #include "Ifx_Types.h"
-
+#include "common.h"
+#include "Vadc/Adc/IfxVadc_Adc.h"
+#include "stdio.h"
+#include "SmartCar_ADC.h"
+#include "control.h"
+#include "Ifx_Types.h"
+#include "SmartCar_Uart.h"
 
 #define AD_NUM 7
 #define AI_NUM 9
@@ -33,11 +39,14 @@ void get_err(void);
 void get_Wifi_AD(void);
 void Elec_process(void);
 void recognize_road(void);
+void Get_AI_AD (void);
 extern float err_synthetical_now;
 extern float AD[(AD_NUM+AI_NUM)];
 extern uint8 If_Start;
 extern _Bool Flag_Find_Max;
 extern int type_of_road;
+//控制ad采数数组
+
 
 
 #endif /* SOURCE_LONG_ADC_H_ */
