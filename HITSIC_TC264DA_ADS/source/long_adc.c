@@ -120,6 +120,7 @@ void LV_Sample(void)                             // adc采集函数
 void LV_Get_Val(void)//约0.3mS                  //对采集的值滤波
 {
     //有时会在0-65535(255)间跳动
+
     for(uint8 i=0;i<AD_NUM;i++)
     {
         for(uint8 j=0;j<=SampleTimes-1;j++)
@@ -190,16 +191,24 @@ void LV_Get_Val(void)//约0.3mS                  //对采集的值滤波
             transfer_AI[k] = MinLVGot;
         }
     }
-    for(uint8 i= 0;i<AD_NUM;i++)
+    if(!send_data_flag)
     {
-        //暂时去掉归一化 AD[i] = (100*LV[i])/Max[i];//(K = 100)
-        AD[i] = transfer[i];
+            for(uint8 i= 0;i<AD_NUM;i++)
+            {
+                //暂时去掉归一化 AD[i] = (100*LV[i])/Max[i];//(K = 100)
+               // AD[i] = (100*transfer[i])/Max[i];
+                AD[i] = transfer[i];
+
+            }
+            for(uint8 i= 0;i<AI_NUM;i++)
+            {
+                //暂时去掉归一化 AD[i] = (100*LV[i])/Max[i];//(K = 100)
+                AD[i+AD_NUM] = transfer_AI[i];
+            }
+
+            send_data_flag=1;
     }
-    for(uint8 i= 0;i<AI_NUM;i++)
-    {
-        //暂时去掉归一化 AD[i] = (100*LV[i])/Max[i];//(K = 100)
-        AD[i+AD_NUM] = transfer_AI[i];
-    }
+
 ///****************************传数据****************************************/
 //    if(!send_data_flag)
 //    {
@@ -327,18 +336,18 @@ void Send_Data(void)
 {
     if(send_data_flag)
     {
-        send_buff[0]=0;
-        send_buff[1]=0;
-        send_buff[2]=(uint8)AD[0]-128;
-        send_buff[3]=(uint8)AD[1]-128;
-        send_buff[4]=(uint8)AD[2]-128;
-        send_buff[5]=(uint8)AD[3]-128;
-        send_buff[6]=(uint8)AD[4]-128;
-        send_buff[7]=(uint8)AD[5]-128;
-        send_buff[8]=(uint8)AD[6]-128;
-        send_buff[9]=(uint8)(128*(pwm_servo-servo_mid)/1.8);
+        send_buff[0]=(uint8)(AD[7]-128);;
+        send_buff[1]=(uint8)(AD[8]-128);;
+        send_buff[2]=(uint8)(AD[9]-128);
+        send_buff[3]=(uint8)(AD[10]-128);
+        send_buff[4]=(uint8)(AD[11]-128);
+        send_buff[5]=(uint8)(AD[12]-128);
+        send_buff[6]=(uint8)(AD[13]-128);
+        send_buff[7]=(uint8)(AD[14]-128);
+        send_buff[8]=(uint8)(AD[15]-128);
+        send_buff[9]=(uint8)(127*(pwm_servo-servo_mid)/1.8);
         send_buff[10]=0x5a;
-//        SmartCar_Uart_Upload(send_buff,11);
+        SmartCar_Uart_Transfer(send_buff,sizeof(send_buff),0);
         send_data_flag=0;
     }
 }
@@ -350,7 +359,7 @@ void Elec_process(void)
     recognize_road();
     get_err();
 //    out_of_road();
-//    Send_Data();
+    Send_Data();
 }
 
 

@@ -139,15 +139,15 @@ void Delay_Start(void)
 }
 
 
-void If_Find_Max(void)//是否开始寻找最大值
-{
-    //Flag_Find_Max==0
-    if (Flag_Find_Max==0)
-    {
-        Flag_Find_Max = 1;
-    }
-    else if (Flag_Find_Max==1)
-    {
-        Flag_Find_Max = 0;
-    }
-}
+//void If_Find_Max(void)//是否开始寻找最大值
+//{
+//    //Flag_Find_Max==0
+//    if (Flag_Find_Max==0)
+//    {
+//        Flag_Find_Max = 1;
+//    }
+//    else if (Flag_Find_Max==1)
+//    {
+//        Flag_Find_Max = 0;
+//    }
+//}

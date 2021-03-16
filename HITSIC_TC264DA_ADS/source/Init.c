@@ -106,7 +106,7 @@ void Eru_init(void)//外部中断初始化
 
 void Uart_init(void)
 {
-    SmartCar_Uart_Init(IfxAsclin0_TX_P15_2_OUT,IfxAsclin0_RXB_P15_3_IN,115200,0);
+    SmartCar_Uart_Init(IfxAsclin0_TX_P15_2_OUT,IfxAsclin0_RXB_P15_3_IN,921600,0);
 }
 
 

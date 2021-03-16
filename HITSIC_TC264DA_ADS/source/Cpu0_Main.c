@@ -74,7 +74,7 @@ int core0_main(void)
     //外部中断初始化
 //    Eru_init();
     //串口初始化
-//    Uart_init();
+    Uart_init();
     //创建菜单并完成参量菜单项的赋值
     elec_init();
 
@@ -89,12 +89,25 @@ int core0_main(void)
 
     while(TRUE)
     {
-        key get_key=GetKey();
-        KeyOperation(get_key);
-        if(get_key!=undo)
-        PrintMenu();
-        if(!GPIO_Read(P20,12))
-        PrintMenu();
+        if(!GPIO_Read(P20,10))
+        {
+            key get_key=GetKey();
+            KeyOperation(get_key);
+            if(get_key!=undo)
+            PrintMenu();
+            if(!GPIO_Read(P20,12))
+            PrintMenu();
+        }
+//        if(!GPIO_Read(P20,7))
+//        {
+//            for(int i = 0;i<=15;i++)
+//            {
+//                if(AD[i] > Max[i])
+//                {
+//                    Max[i] = AD[i];
+//                }
+//            }
+//        }
         if(If_Start == 0)
         {
                if(!GPIO_Read(P20,0))
@@ -112,8 +125,10 @@ int core0_main(void)
               }
         }
 //        num_of_encoder = SmartCar_Encoder_Get(GPT12_T2);
-        Elec_process();
-
+          Elec_process();
+//        uint8 test[2]={90,90};
+//        SmartCar_Uart_Transfer(test,sizeof(test),0);
+//        SmartCar_VarUpload(test,2);
     }
 }
 
