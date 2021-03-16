@@ -36,9 +36,7 @@ void recognize_road(void);
 extern float err_synthetical_now;
 extern float AD[(AD_NUM+AI_NUM)];
 extern uint8 If_Start;
-extern float Max[(AD_NUM+AI_NUM)];//用于存储电感的最大值做归一化准备
 extern _Bool Flag_Find_Max;
-extern float Wifi_Data[10];//上位机传回的数组
 extern int type_of_road;
 
 

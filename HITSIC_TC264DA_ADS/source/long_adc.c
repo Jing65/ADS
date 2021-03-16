@@ -30,6 +30,7 @@ float AD[(AD_NUM+AI_NUM)];
 float MinLVGot=0.05;
 float err_ad_now[2]={0,0};
 float err_synthetical_now = 0;
+static float Max[(AD_NUM+AI_NUM)];
 _Bool Flag_Find_Max = 1;//一开始不开始寻找
 uint8 If_Start = 0;//延时发车
 //控制ad采数数组
@@ -84,7 +85,8 @@ uint8 channel_AI_adc[AI_NUM]={ADC_0,ADC_1,ADC_1,ADC_1,ADC_0,ADC_0,ADC_0,ADC_0,AD
 int type_of_road = 0;
 int sum_of_SCFTM=0;
 _Bool send_data_flag=0;//1：ad数据采集完成   0：ad数据未采集完成
-uint8 send_buff[11];//WIFI传adc数据
+_Bool collect_max_flag = 0;
+uint8 send_buff[13];//WIFI传adc数据
 
 void swap(uint32 *a,uint32 *b)
 {
@@ -193,20 +195,23 @@ void LV_Get_Val(void)//约0.3mS                  //对采集的值滤波
     }
     if(!send_data_flag)
     {
+//        if()
+        {
             for(uint8 i= 0;i<AD_NUM;i++)
             {
                 //暂时去掉归一化 AD[i] = (100*LV[i])/Max[i];//(K = 100)
-               // AD[i] = (100*transfer[i])/Max[i];
+                //AD[i] = (100*transfer[i])/Max[i];
                 AD[i] = transfer[i];
 
             }
             for(uint8 i= 0;i<AI_NUM;i++)
             {
-                //暂时去掉归一化 AD[i] = (100*LV[i])/Max[i];//(K = 100)
+                //AD[i] = (100*transfer_AI[i])/Max[i];//(K = 100)
                 AD[i+AD_NUM] = transfer_AI[i];
             }
-
             send_data_flag=1;
+        }
+
     }
 
 ///****************************传数据****************************************/
@@ -336,18 +341,15 @@ void Send_Data(void)
 {
     if(send_data_flag)
     {
-        send_buff[0]=(uint8)(AD[7]-128);;
-        send_buff[1]=(uint8)(AD[8]-128);;
-        send_buff[2]=(uint8)(AD[9]-128);
-        send_buff[3]=(uint8)(AD[10]-128);
-        send_buff[4]=(uint8)(AD[11]-128);
-        send_buff[5]=(uint8)(AD[12]-128);
-        send_buff[6]=(uint8)(AD[13]-128);
-        send_buff[7]=(uint8)(AD[14]-128);
-        send_buff[8]=(uint8)(AD[15]-128);
-        send_buff[9]=(uint8)(127*(pwm_servo-servo_mid)/1.8);
-        send_buff[10]=0x5a;
-        SmartCar_Uart_Transfer(send_buff,sizeof(send_buff),0);
+        send_buff[0]=0;
+        send_buff[1]=0;
+        for(uint8 i=0;i<=8;i++)
+        {
+            send_buff[(i+2)]=(uint8)((int8)AD[(i+7)]-128);
+        }
+        send_buff[11]=(uint8)((int8)(127*(pwm_servo-servo_mid)/1.8));
+        send_buff[12]=0x5a;
+        SmartCar_Uart_Transfer(send_buff,13,0);
         send_data_flag=0;
     }
 }

@@ -126,8 +126,12 @@ int core0_main(void)
         }
 //        num_of_encoder = SmartCar_Encoder_Get(GPT12_T2);
           Elec_process();
-//        uint8 test[2]={90,90};
-//        SmartCar_Uart_Transfer(test,sizeof(test),0);
+
+//          int8 test=-125;
+//          uint8 test_un;
+////          test_un=(127*(5.55-servo_mid)/1.8);
+//          test_un=(uint8)test;
+//          SmartCar_Uart_Transfer(&test_un,1,0);
 //        SmartCar_VarUpload(test,2);
     }
 }
