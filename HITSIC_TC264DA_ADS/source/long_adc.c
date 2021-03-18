@@ -25,7 +25,7 @@ float MinLVGot=0.05;
 float err_ad_now[2]={0,0};
 float err_synthetical_now = 0;
 //static float Max[(AD_NUM+AI_NUM)];
-_Bool Flag_Find_Max = 1;//一开始不开始寻找
+_Bool Flag_Find_Max = 0;//一开始不开始寻找
 uint8 If_Start = 0;//延时发车
 uint8 channel_name[AD_NUM]={ADC2_CH4_A36,ADC0_CH3_A3,ADC1_CH8_A24,ADC0_CH5_A5,ADC1_CH5_A21,ADC0_CH7_A7,ADC1_CH1_A17};
 uint8 channel_adc[AD_NUM]={ADC_2,ADC_0,ADC_1,ADC_0,ADC_1,ADC_0,ADC_1};
@@ -78,8 +78,9 @@ uint8 channel_AI_adc[AI_NUM]={ADC_0,ADC_1,ADC_1,ADC_1,ADC_0,ADC_0,ADC_0,ADC_0,AD
 int type_of_road = 0;
 int sum_of_SCFTM=0;
 _Bool send_data_flag=0;//1：ad数据采集完成   0：ad数据未采集完成
-_Bool collect_max_flag = 0;
+uint8 collect_max_flag = 0;
 uint8 send_buff[13];//WIFI传adc数据
+static float Max[(AD_NUM+AI_NUM)];
 
 void swap(uint32 *a,uint32 *b)
 {
@@ -191,23 +192,48 @@ void Get_AI_AD (void)
                transfer_AI[k] = MinLVGot;
            }
        }
-       if(!send_data_flag)
+       if (collect_max_flag!=1)
        {
-   //
-               for(uint8 i= 0;i<AD_NUM;i++)
-               {
-                   //暂时去掉归一化 AD[i] = (100*LV[i])/Max[i];//(K = 100)
-                   //AD[i] = (100*transfer[i])/Max[i];
-                   AD[i] = transfer[i];
+           if(!send_data_flag)
+           {
+       //
+                   for(uint8 i= 0;i<AD_NUM;i++)
+                   {
+                       //暂时去掉归一化 AD[i] = (100*LV[i])/Max[i];//(K = 100)
+                       AD[i] = (100*transfer[i])/Max[i];
+                       //AD[i] = transfer[i];
 
-               }
-               for(uint8 i= 0;i<AI_NUM;i++)
+                   }
+                   for(uint8 i= 0;i<AI_NUM;i++)
+                   {
+                       AD[i+AD_NUM] = (250*transfer_AI[i])/Max[i+AD_NUM];//(K = 100)
+                       //AD[i+AD_NUM] = transfer_AI[i];
+                   }
+                   send_data_flag=1;
+              }
+       }
+       else if (collect_max_flag==1)
+       {
+           for(uint8 i=0;i<AD_NUM;i++)
+           {
+               if(transfer[i] > Max[i])
                {
-                   //AD[i] = (100*transfer_AI[i])/Max[i];//(K = 100)
-                   AD[i+AD_NUM] = transfer_AI[i];
+                 Max[i] = transfer[i];
                }
-               send_data_flag=1;
-          }
+               AD[i] = transfer[i];
+           }
+           for(uint8 i=0;i<AI_NUM;i++)
+           {
+               if(transfer_AI[i] > Max[i+AD_NUM])
+               {
+                 Max[i+AD_NUM] = transfer_AI[i];
+               }
+               AD[i+AD_NUM] = transfer_AI[i];
+           }
+
+       }
+
+
 }
 
 void get_err(void)
@@ -340,11 +366,13 @@ void Send_Data(void)
 
 void Elec_process(void)
 {
+
     LV_Sample();
     LV_Get_Val();
     Get_AI_AD();
     recognize_road();
     get_err();
+
 //    out_of_road();
     Send_Data();
 }

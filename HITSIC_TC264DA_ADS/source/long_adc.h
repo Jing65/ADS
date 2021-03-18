@@ -43,7 +43,7 @@ void Get_AI_AD (void);
 extern float err_synthetical_now;
 extern float AD[(AD_NUM+AI_NUM)];
 extern uint8 If_Start;
-extern _Bool Flag_Find_Max;
+extern uint8 collect_max_flag;
 extern int type_of_road;
 //控制ad采数数组
 

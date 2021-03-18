@@ -66,7 +66,7 @@ uint8 ai_data_flag;
 uint8 ch_AI[AI_NUM]={ADC0_CH1_A1,ADC1_CH9_A25,ADC1_CH4_A20,ADC1_CH0_A16,ADC0_CH8_A8,ADC0_CH6_A6,ADC0_CH4_A4,ADC0_CH2_A2,ADC0_CH0_A0};
 uint8 AI_adc[AI_NUM]={ADC_0,ADC_1,ADC_1,ADC_1,ADC_0,ADC_0,ADC_0,ADC_0,ADC_0};
 
-_Bool process_type_ai=0;
+uint8 process_type_ai=0;
 
 
 int core0_main(void)
@@ -113,29 +113,19 @@ int core0_main(void)
 
     while(TRUE)
     {
-//        if(!GPIO_Read(P20,7))
-//        {
-//            for(int i = 0;i<=15;i++)
-//            {
-//                if(AD[i] > Max[i])
-//                {
-//                    Max[i] = AD[i];
-//                }
-//            }
-//        }
-
-        //菜单按键操作检测，拨码3控制是否使用菜单
+        //拨码3控制是否使用菜单,拨码6控制电机启动，拨码5电机停止，拨码1刷新屏幕（启用菜单时有效）
+        //
+        //菜单按键操作检测，
         key_start();
         //AI处理程序
-        if(process_type_ai)
+        if(process_type_ai==1)
         {
             ai_process();
         }
-        else
+        else if(process_type_ai!=1)
         {
             Elec_process();
         }
-
 
 //测试程序        num_of_encoder = SmartCar_Encoder_Get(GPT12_T2);
 //          int8 test=-125;
@@ -164,8 +154,10 @@ IFX_INTERRUPT(cc60_pit_ch1_isr, 0, CCU6_0_CH1_ISR_PRIORITY)
 IFX_INTERRUPT(cc61_pit_ch0_isr, 0, CCU6_1_CH0_ISR_PRIORITY)
 {
     enableInterrupts();//开启中断嵌套
+    if(process_type_ai==1)
     Servo_Elec_AI();
-//    Servo_Elec();
+    else if(process_type_ai!=1)
+    Servo_Elec();
     PIT_CLEAR_FLAG(CCU6_1, PIT_CH0);
 
 }
@@ -181,6 +173,11 @@ IFX_INTERRUPT(cc61_pit_ch1_isr, 0, CCU6_1_CH1_ISR_PRIORITY)
 
 void ai_process(void)
 {
+    for(uint8 i=0;i<=6;i++)
+    {
+        ai_data[i]=(int16)ADC_Get(AI_adc[i], ch_AI[i], ADC_8BIT);
+    }
+    ai_data_flag = 1;
     if(ai_data_flag)
     {
         run_model(model1, ai_data, &temp);

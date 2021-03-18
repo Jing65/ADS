@@ -17,8 +17,8 @@
 #include "SmartCar_Pwm.h"
 #include "port_def.h"
 #include "long_adc.h"
-
-extern _Bool process_type_ai;
+//¥¶¿Ì≥Ã–Úflag
+extern uint8 process_type_ai;
 extern float KP_m;
 extern float KI_m;
 extern float pwm_servo;
