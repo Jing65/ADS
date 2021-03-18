@@ -40,15 +40,38 @@
 #include "SmartCar_Eru.h"
 #include "Init.h"
 #include "long_adc.h"
+#include "ad_ai.h"
 
 #pragma section all "cpu0_dsram"
 //IfxCpu_syncEvent g_cpuSyncEvent;
+    //AI控制参量
+int16 temp;
+int16 servo_value;
+extern const unsigned char model1[];
+typedef struct _model_info_struct
+{
+    char author[30];
+    int quant_bits;
+    int frac_bits;
+    const char* name_string;
+}model_info_struct;
+model_info_struct inf;
+extern void* run_model(const void *model_buf, const void *in_buf, signed short int *out1_buf);
+extern void get_model_info(const void *in_buf, model_info_struct *inf);
+void ai_process(void);
+
+
+int8 ai_data[7];
+uint8 ai_data_flag;
+uint8 ch_AI[AI_NUM]={ADC0_CH1_A1,ADC1_CH9_A25,ADC1_CH4_A20,ADC1_CH0_A16,ADC0_CH8_A8,ADC0_CH6_A6,ADC0_CH4_A4,ADC0_CH2_A2,ADC0_CH0_A0};
+uint8 AI_adc[AI_NUM]={ADC_0,ADC_1,ADC_1,ADC_1,ADC_0,ADC_0,ADC_0,ADC_0,ADC_0};
+
+_Bool process_type_ai=0;
 
 
 int core0_main(void)
 {
     IfxCpu_disableInterrupts();
-    
     get_clk();
     /* !!WATCHDOG0 AND SAFETY WATCHDOG ARE DISABLED HERE!!
      * Enable the watchdogs and service them periodically if it is required
@@ -56,14 +79,14 @@ int core0_main(void)
     IfxScuWdt_disableCpuWatchdog(IfxScuWdt_getCpuWatchdogPassword());
     IfxScuWdt_disableSafetyWatchdog(IfxScuWdt_getSafetyWatchdogPassword());
     
+
     /* Wait for CPU sync event */
     IfxCpu_emitEvent(&g_cpuSyncEvent);
     IfxCpu_waitEvent(&g_cpuSyncEvent, 1);
     //初始化外设
     //屏幕初始化
     SmartCar_Oled_Init();
-    //GPIO初始化，20.9保存flash提示灯
-
+    //GPIO初始化，02.8蜂鸣器
     GPIO_Init(P02,8, PUSHPULL,0);
    //PWM初始化
     PWM_init();
@@ -75,29 +98,21 @@ int core0_main(void)
 //    Eru_init();
     //串口初始化
     Uart_init();
-    //创建菜单并完成参量菜单项的赋值
+    //电感初始化
     elec_init();
-
+    //菜单就绪
     Read_flash();
     CreatMenu();
-    //给状态菜单项赋值
     MenuInit();
     PrintMenu();
-
+    //AI初始化
+    get_model_info(model1, &inf);
+    //开启总中断
     IfxCpu_enableInterrupts();
 
 
     while(TRUE)
     {
-        if(!GPIO_Read(P20,10))
-        {
-            key get_key=GetKey();
-            KeyOperation(get_key);
-            if(get_key!=undo)
-            PrintMenu();
-            if(!GPIO_Read(P20,12))
-            PrintMenu();
-        }
 //        if(!GPIO_Read(P20,7))
 //        {
 //            for(int i = 0;i<=15;i++)
@@ -108,26 +123,19 @@ int core0_main(void)
 //                }
 //            }
 //        }
-        if(If_Start == 0)
+
+        //菜单按键操作检测，拨码3控制是否使用菜单
+        key_start();
+        //AI处理程序
+        if(process_type_ai)
         {
-               if(!GPIO_Read(P20,0))
-              {
-                 Delay_ms(STM1,3000);
-                 If_Start = 1;
-              }
+            ai_process();
         }
-        if(If_Start == 1)
+        else
         {
-               if(!GPIO_Read(P20,8))
-              {
-                 Delay_ms(STM1,200);
-                 If_Start = 0;
-              }
+            Elec_process();
         }
 
-        get_ai_data();
-        AI_process();
-//        Elec_process();
 
 //测试程序        num_of_encoder = SmartCar_Encoder_Get(GPT12_T2);
 //          int8 test=-125;
@@ -156,7 +164,8 @@ IFX_INTERRUPT(cc60_pit_ch1_isr, 0, CCU6_0_CH1_ISR_PRIORITY)
 IFX_INTERRUPT(cc61_pit_ch0_isr, 0, CCU6_1_CH0_ISR_PRIORITY)
 {
     enableInterrupts();//开启中断嵌套
-    Moto_Speed();
+    Servo_Elec_AI();
+//    Servo_Elec();
     PIT_CLEAR_FLAG(CCU6_1, PIT_CH0);
 
 }
@@ -164,7 +173,22 @@ IFX_INTERRUPT(cc61_pit_ch0_isr, 0, CCU6_1_CH0_ISR_PRIORITY)
 IFX_INTERRUPT(cc61_pit_ch1_isr, 0, CCU6_1_CH1_ISR_PRIORITY)
 {
     enableInterrupts();//开启中断嵌套
-    Servo_Elec();
+    Moto_Speed();
     PIT_CLEAR_FLAG(CCU6_1, PIT_CH1);
 }
+
+
+
+void ai_process(void)
+{
+    if(ai_data_flag)
+    {
+        run_model(model1, ai_data, &temp);
+        servo_value = temp >> (inf.quant_bits - inf.frac_bits - 1);
+        pwm_servo=servo_mid+((float)servo_value)*1.8/127;
+        ai_data_flag = 0;
+    }
+
+}
+
 #pragma section all restore

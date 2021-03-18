@@ -18,6 +18,7 @@
 #include "port_def.h"
 #include "long_adc.h"
 
+extern _Bool process_type_ai;
 extern float KP_m;
 extern float KI_m;
 extern float pwm_servo;
@@ -33,6 +34,7 @@ void Moto_Speed(void);//含pid控制的电机pwm输出
 //void modechange(void);//oled图像与菜单转换
 //void Menu_set(void);
 void If_Find_Max(void);
+void Servo_Elec_AI(void);
 
 
 #endif /* SOURCE_CONTROL_H_ */

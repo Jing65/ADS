@@ -101,7 +101,7 @@ void PrintintData(int mul,int now_);
 void PrintfloatData(float mul,float now_);
 void Save_data(void);
 void Read_flash(void);
-
+void key_start(void);
 
 
 

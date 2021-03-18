@@ -14,6 +14,35 @@ uint16 CurMenu = MENU;//当前菜单的ID，初始化为1
 static item Item[ITEM_MAX];  //菜单项结构体数组
 static uint32 CAR_BUFFER[PARA_MAX];//flash中用来存数据的数组
 
+void key_start(void)
+{
+    if(!GPIO_Read(P20,10))
+    {
+        key get_key=GetKey();
+        KeyOperation(get_key);
+        if(get_key!=undo)
+        PrintMenu();
+        if(!GPIO_Read(P20,12))
+        PrintMenu();
+    }
+    if(If_Start == 0)
+    {
+           if(!GPIO_Read(P20,0))
+          {
+             Delay_ms(STM1,3000);
+             If_Start = 1;
+          }
+    }
+    if(If_Start == 1)
+    {
+           if(!GPIO_Read(P20,8))
+          {
+             Delay_ms(STM1,200);
+             If_Start = 0;
+          }
+    }
+}
+
 
 item CreatItem(itemtype type, char* name, int16 min, int16 max)
 {

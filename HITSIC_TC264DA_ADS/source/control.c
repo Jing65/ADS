@@ -92,7 +92,10 @@ void Moto_Speed(void)//电机控制
 
 }
 
-
+void Servo_Elec_AI(void)
+{
+    SmartCar_Gtm_Pwm_Setduty(&Servo_PIN, (uint32)(pwm_servo*100));
+}
 void Servo_Elec(void)//电磁舵机控制
 {
     if(type_of_road==0)//直道和45度弯
