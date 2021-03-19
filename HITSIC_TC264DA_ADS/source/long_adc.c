@@ -79,9 +79,8 @@ int type_of_road = 0;
 int sum_of_SCFTM=0;
 _Bool send_data_flag=0;//1：ad数据采集完成   0：ad数据未采集完成
 uint8 collect_max_flag = 0;
-uint8 send_buff[13];//WIFI传adc数据
+uint8 send_buff[11];//WIFI传adc数据
 static float Max[(AD_NUM+AI_NUM)];
-
 void swap(uint32 *a,uint32 *b)
 {
     uint32 temp=*a;
@@ -353,13 +352,13 @@ void Send_Data(void)
     {
         send_buff[0]=0;
         send_buff[1]=0;
-        for(uint8 i=0;i<=8;i++)
+        for(uint8 i=0;i<=6;i++)
         {
             send_buff[(i+2)]=(uint8)((int8)AD[(i+7)]-128);
         }
-        send_buff[11]=(uint8)((int8)(127*(pwm_servo-servo_mid)/1.8));
-        send_buff[12]=0x5a;
-        SmartCar_Uart_Transfer(send_buff,13,0);
+        send_buff[9]=(uint8)((int8)(127*(pwm_servo-servo_mid)/1.8));
+        send_buff[10]=0x5a;
+        SmartCar_Uart_Transfer(send_buff,11,0);
         send_data_flag=0;
     }
 }
@@ -373,7 +372,7 @@ void Elec_process(void)
     recognize_road();
     get_err();
 
-//    out_of_road();
+    out_of_road();
     Send_Data();
 }
 
