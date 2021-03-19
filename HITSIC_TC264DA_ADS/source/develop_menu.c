@@ -148,6 +148,22 @@ void CreatMenu(void)//**创建并插入一个新项需要增加一个新ITEMID枚举项***
     InsertItem(Item, MENU, MOTOR);
     InsertItem(Item, MENU, UNUSE);
     InsertItem(Item, MENU, HOLD);
+//    Item[AD_1] = CreatItem(stateF_item, "AD_1", 0, 5000);
+//    Item[AD_2] = CreatItem(stateF_item, "AD_2", 0, 5000);
+//    Item[AD_3] = CreatItem(stateF_item, "AD_3", 0, 5000);
+//    Item[AD_4] = CreatItem(stateF_item, "AD_4", 0, 5000);
+//    Item[AD_5] = CreatItem(stateF_item, "AD_5", 0, 5000);
+//    Item[AD_6] = CreatItem(stateF_item, "AD_6", 0, 5000);
+//    Item[AD_7] = CreatItem(stateF_item, "AD_7", 0, 5000);
+//    Item[AD_8] = CreatItem(stateF_item, "AD_8", 0, 5000);
+//    Item[AD_9] = CreatItem(stateF_item, "AD_9", 0, 5000);
+//    Item[AD_10] = CreatItem(stateF_item, "AD_10", 0, 5000);
+//    Item[AD_11] = CreatItem(stateF_item, "AD_11", 0, 5000);
+//    Item[AD_12] = CreatItem(stateF_item, "AD_12", 0, 5000);
+//    Item[AD_13] = CreatItem(stateF_item, "AD_13", 0, 5000);
+//    Item[AD_14] = CreatItem(stateF_item, "AD_14", 0, 5000);
+//    Item[AD_15] = CreatItem(stateF_item, "AD_15", 0, 5000);
+//    Item[AD_16] = CreatItem(stateF_item, "AD_16", 0, 5000);
     Item[AD_1] = CreatItem(stateF_item, "AD_1", 0, 400);
     Item[AD_2] = CreatItem(stateF_item, "AD_2", 0, 400);
     Item[AD_3] = CreatItem(stateF_item, "AD_3", 0, 400);
@@ -155,15 +171,15 @@ void CreatMenu(void)//**创建并插入一个新项需要增加一个新ITEMID枚举项***
     Item[AD_5] = CreatItem(stateF_item, "AD_5", 0, 400);
     Item[AD_6] = CreatItem(stateF_item, "AD_6", 0, 400);
     Item[AD_7] = CreatItem(stateF_item, "AD_7", 0, 400);
-    Item[AD_8] = CreatItem(stateF_item, "AD_8", 0, 400);
-    Item[AD_9] = CreatItem(stateF_item, "AD_9", 0, 400);
-    Item[AD_10] = CreatItem(stateF_item, "AD_10", 0, 400);
-    Item[AD_11] = CreatItem(stateF_item, "AD_11", 0, 400);
-    Item[AD_12] = CreatItem(stateF_item, "AD_12", 0, 400);
-    Item[AD_13] = CreatItem(stateF_item, "AD_13", 0, 400);
-    Item[AD_14] = CreatItem(stateF_item, "AD_14", 0, 400);
-    Item[AD_15] = CreatItem(stateF_item, "AD_15", 0, 400);
-    Item[AD_16] = CreatItem(stateF_item, "AD_16", 0, 400);
+    Item[AD_8] = CreatItem(stateF_item, "AI_left2", 0, 400);
+    Item[AD_9] = CreatItem(stateF_item, "AI_left1", 0, 400);
+    Item[AD_10] = CreatItem(stateF_item, "AI_MID", 0, 400);
+    Item[AD_11] = CreatItem(stateF_item, "AI_LM", 0, 400);
+    Item[AD_12] = CreatItem(stateF_item, "AI_MID", 0, 400);
+    Item[AD_13] = CreatItem(stateF_item, "AI_RM", 0, 400);
+    Item[AD_14] = CreatItem(stateF_item, "AI_Rshu", 0, 400);
+    Item[AD_15] = CreatItem(stateF_item, "AI_right1", 0, 400);
+    Item[AD_16] = CreatItem(stateF_item, "AI_rihrt2", 0, 400);
     InsertItem(Item, AD_, AD_1);
     InsertItem(Item, AD_, AD_2);
     InsertItem(Item, AD_, AD_3);
@@ -242,6 +258,7 @@ void Read_flash(void)
     KI_m=Page_Read(0,6,float);
     collect_max_flag=Page_Read(0,7,uint8);
     process_type_ai=Page_Read(0,8,uint8);
+    //Read_AD();
 }
 
 void DataUpdate(void)
@@ -357,6 +374,7 @@ void KeyOperation(key Key)
             else if(CurItem == HOLD)
             {
                 Save_data();
+                Save_ADMAX();
                 GPIO_Set(P02,8, 1);
                 Delay_ms(STM0, 100);
                 GPIO_Set(P02,8, 0);

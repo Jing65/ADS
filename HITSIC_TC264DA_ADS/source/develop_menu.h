@@ -20,7 +20,6 @@
 #define ITEM_MAX 60//菜单项数目的极限
 #define PARA_MAX 40//参量型菜单项数目的极限
 
-
 extern uint16 ItemNum;
 extern uint16 ParaNum;
 extern uint16 OrderNum;

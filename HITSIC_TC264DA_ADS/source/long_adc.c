@@ -16,8 +16,8 @@
 
 
 //AI采数数组和控制采数数组分开
-uint32 LV_control[AD_NUM][SampleTimes];
-uint32 LV_AI[AI_NUM][SampleTimes_AI];
+uint16 LV_control[AD_NUM][SampleTimes];
+uint16 LV_AI[AI_NUM][SampleTimes_AI];
 float transfer[AD_NUM];
 float transfer_AI[AI_NUM];
 float AD[(AD_NUM+AI_NUM)];
@@ -79,11 +79,11 @@ int type_of_road = 0;
 int sum_of_SCFTM=0;
 _Bool send_data_flag=0;//1：ad数据采集完成   0：ad数据未采集完成
 uint8 collect_max_flag = 0;
-uint8 send_buff[11];//WIFI传adc数据
-static float Max[(AD_NUM+AI_NUM)];
-void swap(uint32 *a,uint32 *b)
+uint8 send_buff[SendDataTime];//WIFI传adc数据
+float Max[(AD_NUM+AI_NUM)];
+void swap(uint16 *a,uint16 *b)
 {
-    uint32 temp=*a;
+    uint16 temp=*a;
     *a=*b;
     *b=temp;
 }
@@ -205,7 +205,7 @@ void Get_AI_AD (void)
                    }
                    for(uint8 i= 0;i<AI_NUM;i++)
                    {
-                       AD[i+AD_NUM] = (250*transfer_AI[i])/Max[i+AD_NUM];//(K = 100)
+                       AD[i+AD_NUM] = (127*transfer_AI[i])/Max[i+AD_NUM];//(K = 100)
                        //AD[i+AD_NUM] = transfer_AI[i];
                    }
                    send_data_flag=1;
@@ -256,11 +256,11 @@ void get_err(void)
 void recognize_road(void)
 {
    //直角弯标志位
-   if (AD[2]-AD[3]<-50&&AD[2]<8)
+   if (AD[2]-AD[3]<-50&&AD[2]<15)
    {
        type_of_road=11;
    }
-   if (AD[2]-AD[3]>50&&AD[3]<8)
+   if (AD[2]-AD[3]>50&&AD[3]<15)
    {
        type_of_road=10;
    }
@@ -352,10 +352,17 @@ void Send_Data(void)
     {
         send_buff[0]=0;
         send_buff[1]=0;
-        for(uint8 i=0;i<=6;i++)
-        {
-            send_buff[(i+2)]=(uint8)((int8)AD[(i+7)]-128);
-        }
+//        for(uint8 i=0;i<=6;i++)
+//        {
+//            send_buff[(i+2)]=(uint8)((int8)AD[(i+7)]-128);
+//        }
+        send_buff[2]=(uint8)((int8)AD[7]-128);
+        send_buff[3]=(uint8)((int8)AD[8]-128);
+        send_buff[4]=(uint8)((int8)AD[9]-128);
+        send_buff[5]=(uint8)((int8)AD[11]-128);
+        send_buff[6]=(uint8)((int8)AD[13]-128);
+        send_buff[7]=(uint8)((int8)AD[14]-128);
+        send_buff[8]=(uint8)((int8)AD[15]-128);
         send_buff[9]=(uint8)((int8)(127*(pwm_servo-servo_mid)/1.8));
         send_buff[10]=0x5a;
         SmartCar_Uart_Transfer(send_buff,11,0);
@@ -363,15 +370,33 @@ void Send_Data(void)
     }
 }
 
+void Save_ADMAX(void)
+{
+    Sector_Erase(1);
+    uint32 MAX[(AD_NUM+AI_NUM)];
+    for(uint8 i=0;i<(AD_NUM+AI_NUM);i++)
+    {
+        MAX[i]=float_conversion_uint32(Max[i]);
+        Page_Program(1,i,&MAX[i]);
+    }
+}
+
+void Read_AD(void)
+{
+    for(uint8 i=0;i<(AD_NUM+AI_NUM);i++)
+    {
+        Max[i]=Page_Read(0,i,float);
+    }
+
+}
+
 void Elec_process(void)
 {
-
     LV_Sample();
     LV_Get_Val();
     Get_AI_AD();
     recognize_road();
     get_err();
-
     out_of_road();
     Send_Data();
 }
