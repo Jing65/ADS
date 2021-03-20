@@ -63,8 +63,8 @@ void ai_process(void);
 
 int8 ai_data[7];
 uint8 ai_data_flag;
-uint8 ch_AI[AI_NUM]={ADC0_CH1_A1,ADC1_CH9_A25,ADC1_CH4_A20,ADC0_CH8_A8,ADC0_CH4_A4,ADC0_CH2_A2,ADC0_CH0_A0};
-uint8 AI_adc[AI_NUM]={ADC_0,ADC_1,ADC_1,ADC_0,ADC_0,ADC_0,ADC_0};
+uint8 ch_AI[AI_NUM]={ADC1_CH9_A25,ADC1_CH4_A20,ADC1_CH0_A16,ADC0_CH8_A8,ADC0_CH6_A6,ADC0_CH4_A4,ADC0_CH2_A2};
+uint8 AI_adc[AI_NUM]={ADC_1,ADC_1,ADC_1,ADC_0,ADC_0,ADC_0,ADC_0};
 
 uint8 process_type_ai=0;
 
@@ -177,19 +177,19 @@ void ai_process(void)
     {
         ai_data[i]=(int16)ADC_Get(AI_adc[i], ch_AI[i], ADC_8BIT);
     }
-    ai_data[0]=(int8)((127*ai_data[0])/Max[7]);
-    ai_data[1]=(int8)((127*ai_data[1])/Max[8]);
-    ai_data[2]=(int8)((127*ai_data[2])/Max[9]);
-    ai_data[3]=(int8)((127*ai_data[3])/Max[11]);
-    ai_data[4]=(int8)((127*ai_data[4])/Max[13]);
-    ai_data[5]=(int8)((127*ai_data[5])/Max[14]);
-    ai_data[6]=(int8)((127*ai_data[6])/Max[15]);
+    ai_data[0]=(int8)((127*(int16)ai_data[0])/Max[8]);
+    ai_data[1]=(int8)((127*(int16)ai_data[1])/Max[9]);
+    ai_data[2]=(int8)((127*(int16)ai_data[2])/Max[10]);
+    ai_data[3]=(int8)((127*(int16)ai_data[3])/Max[11]);
+    ai_data[4]=(int8)((127*(int16)ai_data[4])/Max[12]);
+    ai_data[5]=(int8)((127*(int16)ai_data[5])/Max[13]);
+    ai_data[6]=(int8)((127*(int16)ai_data[6])/Max[14]);
     ai_data_flag = 1;
     if(ai_data_flag)
     {
         run_model(model1, ai_data, &temp);
         servo_value = temp >> (inf.quant_bits - inf.frac_bits - 1);
-        pwm_servo=servo_mid+((servo_value)*1.8)/127;
+        pwm_servo=servo_mid+((float)(servo_value)*1.8)/127;
         ai_data_flag = 0;
     }
 

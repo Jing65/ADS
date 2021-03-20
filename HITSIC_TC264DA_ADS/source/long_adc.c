@@ -363,13 +363,13 @@ void Send_Data(void)
 //        {
 //            send_buff[(i+2)]=(uint8)((int8)AD[(i+7)]-128);
 //        }
-        send_buff[2]=(uint8)((int8)AD[7]-128);
-        send_buff[3]=(uint8)((int8)AD[8]-128);
-        send_buff[4]=(uint8)((int8)AD[9]-128);
+        send_buff[2]=(uint8)((int8)AD[8]-128);
+        send_buff[3]=(uint8)((int8)AD[9]-128);
+        send_buff[4]=(uint8)((int8)AD[10]-128);
         send_buff[5]=(uint8)((int8)AD[11]-128);
-        send_buff[6]=(uint8)((int8)AD[13]-128);
-        send_buff[7]=(uint8)((int8)AD[14]-128);
-        send_buff[8]=(uint8)((int8)AD[15]-128);
+        send_buff[6]=(uint8)((int8)AD[12]-128);
+        send_buff[7]=(uint8)((int8)AD[13]-128);
+        send_buff[8]=(uint8)((int8)AD[14]-128);
         send_buff[9]=(uint8)((int8)(127*(pwm_servo-servo_mid)/1.8));
         send_buff[10]=0x5a;
         SmartCar_Uart_Transfer(send_buff,11,0);
