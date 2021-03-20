@@ -181,9 +181,7 @@ void ai_process(void)
     ai_data[1]=(int8)((127*ai_data[1])/Max[8]);
     ai_data[2]=(int8)((127*ai_data[2])/Max[9]);
     ai_data[3]=(int8)((127*ai_data[3])/Max[11]);
-
     ai_data[4]=(int8)((127*ai_data[4])/Max[13]);
-
     ai_data[5]=(int8)((127*ai_data[5])/Max[14]);
     ai_data[6]=(int8)((127*ai_data[6])/Max[15]);
     ai_data_flag = 1;

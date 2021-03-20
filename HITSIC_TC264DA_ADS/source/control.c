@@ -122,11 +122,11 @@ void Servo_Elec(void)//电磁舵机控制
     }
     else if (type_of_road==20)//20左环
     {
-        pwm_servo =servo_mid-0.7*LIMIT_SE;
+        pwm_servo =servo_mid-0.4*LIMIT_SE;
     }
     else if (type_of_road==21)//21右环
     {
-        pwm_servo =servo_mid+0.7*LIMIT_SE;
+        pwm_servo =servo_mid+0.4*LIMIT_SE;
     }
     SmartCar_Gtm_Pwm_Setduty(&Servo_PIN, (uint32)(pwm_servo*100));
 //    /*********************************测舵机中值**********************************/

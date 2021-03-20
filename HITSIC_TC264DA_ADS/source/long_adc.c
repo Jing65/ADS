@@ -256,27 +256,34 @@ void get_err(void)
 void recognize_road(void)
 {
    //直角弯标志位
-   if (AD[2]-AD[3]<-50&&AD[2]<15)
+   if (AD[2]-AD[3]<-40&&AD[2]<15)
    {
        type_of_road=11;
    }
-   if (AD[2]-AD[3]>50&&AD[3]<15)
+   if (AD[2]-AD[3]>40&&AD[3]<15)
    {
        type_of_road=10;
    }
-   if (AD[6]>=170&&AD[0]-AD[1]>10)
+   if(type_of_road!=21)
    {
-       type_of_road=20;
+       if (AD[6]>=200&&AD[0]-AD[1]>10)
+       {
+           type_of_road=20;
+       }
    }
-   if (AD[6]>=170&&AD[0]-AD[1]<-10)
+   if(type_of_road!=20)
    {
-       type_of_road=21;
+       if (AD[6]>=200&&AD[0]-AD[1]<-10)
+       {
+           type_of_road=21;
+       }
    }
+
    //清除直角弯标志位
    if (type_of_road==11||type_of_road==10)
    {
        sum_of_SCFTM++;
-       if (AD[6]>55&&sum_of_SCFTM>10)
+       if (AD[6]>50&&sum_of_SCFTM>10)
        {
            type_of_road=0;
            sum_of_SCFTM=0;
@@ -285,7 +292,7 @@ void recognize_road(void)
    if (type_of_road==20||type_of_road==21)
    {
        sum_of_SCFTM++;
-       if (AD[6]<=120&&AD[1]+AD[0]<100&&sum_of_SCFTM>10)
+       if (AD[6]<=130&&AD[1]+AD[0]<100&&sum_of_SCFTM>10)
        {
            type_of_road=0;
            sum_of_SCFTM=0;
