@@ -102,6 +102,17 @@ int core0_main(void)
     elec_init();
     //菜单就绪
     Read_flash();
+    if(!GPIO_Read(P20,7))
+    {
+        Read_AD();
+    }
+    else
+    {
+        for(uint8 i=0;i<(AD_NUM+AI_NUM);i++)
+        {
+            Max[i]=0;
+        }
+    }
     CreatMenu();
     MenuInit();
     PrintMenu();
@@ -111,9 +122,10 @@ int core0_main(void)
     IfxCpu_enableInterrupts();
 
 
+
     while(TRUE)
     {
-        //拨码3控制是否使用菜单,拨码6控制电机启动，拨码5电机停止，拨码1刷新屏幕（启用菜单时有效）
+        //拨码3控制是否使用菜单,拨码6控制电机启动，拨码5电机停止，拨码1刷新屏幕（启用菜单时有效），拨码4控制是否读取法最大值数组
         //
         //菜单按键操作检测，
         key_start();

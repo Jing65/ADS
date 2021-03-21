@@ -258,7 +258,6 @@ void Read_flash(void)
     KI_m=Page_Read(0,6,float);
     collect_max_flag=Page_Read(0,7,uint8);
     process_type_ai=Page_Read(0,8,uint8);
-    //Read_AD();
 }
 
 void DataUpdate(void)
@@ -293,6 +292,29 @@ void Save_data(void)
     for(uint8 i=0;i<PARA_MAX-1;i++)
     {
         Page_Program(0,i,&CAR_BUFFER[i+1]);
+    }
+
+}
+
+void Save_ADMAX(void)
+{
+    Sector_Erase(1);
+    uint32 Save_max[(AD_NUM+AI_NUM)];
+    for(uint8 i=0;i<(AD_NUM+AI_NUM);i++)
+    {
+        Save_max[i]=float_conversion_uint32(Max[i]);
+    }
+    for(uint8 i=0;i<(AD_NUM+AI_NUM);i++)
+    {
+        Page_Program(1,i,&Save_max[i]);
+    }
+}
+
+void Read_AD(void)
+{
+    for(uint8 i=0;i<(AD_NUM+AI_NUM);i++)
+    {
+        Max[i]=Page_Read(1,i,float);
     }
 
 }
@@ -375,6 +397,7 @@ void KeyOperation(key Key)
             {
                 Save_data();
                 Save_ADMAX();
+//                Sector_Erase(1);
                 GPIO_Set(P02,8, 1);
                 Delay_ms(STM0, 100);
                 GPIO_Set(P02,8, 0);

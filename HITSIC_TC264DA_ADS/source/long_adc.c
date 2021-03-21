@@ -81,6 +81,7 @@ _Bool send_data_flag=0;//1：ad数据采集完成   0：ad数据未采集完成
 uint8 collect_max_flag = 0;
 uint8 send_buff[SendDataTime];//WIFI传adc数据
 float Max[(AD_NUM+AI_NUM)];
+//static uint32 Save_max[(AD_NUM+AI_NUM)];
 void swap(uint16 *a,uint16 *b)
 {
     uint16 temp=*a;
@@ -266,18 +267,18 @@ void recognize_road(void)
    }
    if(type_of_road!=21)
    {
-       if (AD[6]>=200&&AD[0]-AD[1]>10)
+       if (AD[6]>=220)
        {
            type_of_road=20;
        }
    }
-   if(type_of_road!=20)
-   {
-       if (AD[6]>=200&&AD[0]-AD[1]<-10)
-       {
-           type_of_road=21;
-       }
-   }
+//   if(type_of_road!=20)
+//   {
+//       if (AD[6]>=200&&AD[0]-AD[1]<-10)
+//       {
+//           type_of_road=21;
+//       }
+//   }
 
    //清除直角弯标志位
    if (type_of_road==11||type_of_road==10)
@@ -377,25 +378,6 @@ void Send_Data(void)
     }
 }
 
-void Save_ADMAX(void)
-{
-    Sector_Erase(1);
-    uint32 MAX[(AD_NUM+AI_NUM)];
-    for(uint8 i=0;i<(AD_NUM+AI_NUM);i++)
-    {
-        MAX[i]=float_conversion_uint32(Max[i]);
-        Page_Program(1,i,&MAX[i]);
-    }
-}
-
-void Read_AD(void)
-{
-    for(uint8 i=0;i<(AD_NUM+AI_NUM);i++)
-    {
-        Max[i]=Page_Read(0,i,float);
-    }
-
-}
 
 void Elec_process(void)
 {
