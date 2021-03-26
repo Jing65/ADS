@@ -16,10 +16,8 @@
 
 
 //AI采数数组和控制采数数组分开
-uint16 LV_control[AD_NUM][SampleTimes];
-uint16 LV_AI[AI_NUM][SampleTimes_AI];
-float transfer[AD_NUM];
-float transfer_AI[AI_NUM];
+
+
 float AD[(AD_NUM+AI_NUM)];
 float MinLVGot=0.05;
 float err_ad_now[2]={0,0};
@@ -89,9 +87,14 @@ void swap(uint16 *a,uint16 *b)
     *b=temp;
 }
 
-
+float Average[AD_NUM];
+float Average_AI[AI_NUM];
 void LV_Sample(void)                             // adc采集函数
 {
+    uint16 LV_control[AD_NUM][SampleTimes];
+    uint16 LV_AI[AI_NUM][SampleTimes_AI];
+    float transfer[AD_NUM];
+    float transfer_AI[AI_NUM];
     for (uint8 h=0;h<AD_NUM;h++)
     {
         for(uint8 i=0;i<=SampleTimes-1;i++)
@@ -110,103 +113,75 @@ void LV_Sample(void)                             // adc采集函数
         }
     }
 
-}
-
-
-void LV_Get_Val(void)//约0.3mS                  //对采集的值滤波
-{
-    //有时会在0-65535(255)间跳动
-
     for(uint8 i=0;i<AD_NUM;i++)
     {
         for(uint8 j=0;j<=SampleTimes-1;j++)
         {
-             if(LV_control[i][j]>500)//剔除毛刺信号
+             if(LV_control[i][j]>255)//剔除毛刺信号
              {
-                 LV_control[i][j]=500;
+                 LV_control[i][j]=255;
              }
-        }
-    }
-    //排序
-    for(uint8 k=0;k<AD_NUM;k++)
-    {
-        for(uint8 i=0;i<=SampleTimes-2;i++)
-        {
-            for(uint8 j=i+1;j<=SampleTimes-1;j++)
-            {
-                if(LV_control[k][i]>LV_control[k][j])
-                swap(&LV_control[k][i],&LV_control[k][j]);//交换，swap函数自己写
-            }
         }
     }
 
     for(uint8 k=0;k<AD_NUM;k++)
     {
-        for(uint8 i=4;i<=SampleTimes-5;i++)
+        for(uint8 i=0;i<=SampleTimes-1;i++)
         {
             transfer[k]+=(float)LV_control[k][i];
         }
-        transfer[k]=transfer[k]/(SampleTimes-8);
-        if( transfer[k] < MinLVGot )
+        Average[k]=transfer[k]/SampleTimes;
+        if( Average[k] < MinLVGot )
         {
-            transfer[k] = MinLVGot;
+            Average[k] = MinLVGot;
         }
     }
+
+    for(uint8 i=0;i<AI_NUM;i++)
+           {
+               for(uint8 j=0;j<=SampleTimes_AI-1;j++)
+               {
+                    if(LV_AI[i][j]>255)//剔除毛刺信号
+                    {
+                        LV_AI[i][j]=255;
+                    }
+               }
+           }
+
+           for(uint8 k=0;k<AI_NUM;k++)
+           {
+               for(uint8 i=0;i<=SampleTimes-1;i++)
+               {
+                   transfer_AI[k]+=(float)LV_AI[k][i];
+               }
+               Average_AI[k]=transfer_AI[k]/SampleTimes_AI;
+               if( Average_AI[k] < MinLVGot )
+               {
+                  Average_AI[k] = MinLVGot;
+               }
+           }
+
 }
 
 
 void Get_AI_AD (void)
 {
-    for(uint8 i=0;i<AI_NUM;i++)
-       {
-           for(uint8 j=0;j<=SampleTimes_AI-1;j++)
-           {
-                if(LV_AI[i][j]>500)//剔除毛刺信号
-                {
-                    LV_AI[i][j]=500;
-                }
-           }
-       }
 
-       for(uint8 k=0;k<AI_NUM;k++)
-       {
-           for(uint8 i=0;i<=SampleTimes_AI-2;i++)
-           {
-               for(uint8 j=i+1;j<=SampleTimes_AI-1;j++)
-               {
-                   if(LV_AI[k][i]>LV_AI[k][j])
-                   swap(&LV_AI[k][i],&LV_AI[k][j]);//交换，swap函数自己写
-               }
-           }
-       }
-
-       for(uint8 k=0;k<AI_NUM;k++)
-       {
-           for(uint8 i=4;i<=SampleTimes-5;i++)
-           {
-               transfer_AI[k]+=(float)LV_AI[k][i];
-           }
-           transfer_AI[k]=transfer_AI[k]/(SampleTimes-8);
-           if( transfer_AI[k] < MinLVGot )
-           {
-               transfer_AI[k] = MinLVGot;
-           }
-       }
        if (collect_max_flag!=1)
        {
            if(!send_data_flag)
            {
-       //
+
                    for(uint8 i= 0;i<AD_NUM;i++)
                    {
                        //暂时去掉归一化 AD[i] = (100*LV[i])/Max[i];//(K = 100)
-                       AD[i] = (100*transfer[i])/Max[i];
+                       AD[i] = (100*Average[i])/Max[i];
                        //AD[i] = transfer[i];
 
                    }
                    for(uint8 i= 0;i<AI_NUM;i++)
                    {
-                       AD[i+AD_NUM] = (127*transfer_AI[i])/Max[i+AD_NUM];//(K = 100)
+                       AD[i+AD_NUM] = (127*Average_AI[i])/Max[i+AD_NUM];//(K = 100)
                        //AD[i+AD_NUM] = transfer_AI[i];
                    }
                    send_data_flag=1;
@@ -216,19 +191,19 @@ void Get_AI_AD (void)
        {
            for(uint8 i=0;i<AD_NUM;i++)
            {
-               if(transfer[i] > Max[i])
+               if(Average[i] > Max[i])
                {
-                 Max[i] = transfer[i];
+                 Max[i] = Average[i];
                }
-               AD[i] = transfer[i];
+               AD[i] = Average[i];
            }
            for(uint8 i=0;i<AI_NUM;i++)
            {
-               if(transfer_AI[i] > Max[i+AD_NUM])
+               if(Average_AI[i] > Max[i+AD_NUM])
                {
-                 Max[i+AD_NUM] = transfer_AI[i];
+                 Max[i+AD_NUM] = Average_AI[i];
                }
-               AD[i+AD_NUM] = transfer_AI[i];
+               AD[i+AD_NUM] = Average_AI[i];
            }
 
        }
@@ -267,7 +242,7 @@ void recognize_road(void)
    }
    if(type_of_road!=21)
    {
-       if (AD[6]>=220)
+       if (AD[6]>=200)
        {
            type_of_road=20;
        }
@@ -382,7 +357,6 @@ void Send_Data(void)
 void Elec_process(void)
 {
     LV_Sample();
-    LV_Get_Val();
     Get_AI_AD();
     recognize_road();
     get_err();

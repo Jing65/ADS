@@ -110,7 +110,7 @@ typedef unsigned char       uint8;
 /* 16bit unsigned:  0..65535 [0x0000..0xFFFF]*/
 /* [cover parentID={66E964CA-35D5-4013-BB61-1E824636D713}] uint16 [/cover] */
 typedef unsigned short      uint16;
-
+typedef unsigned short      uint16_t;
 /* 32bit unsigned:  0..4294967295 [0x00000000..0xFFFFFFFF]*/
 /* [cover parentID={DA33B7A0-7CD3-45e7-9C9A-6D63FB8BA3DC}] uint32 [/cover] */
 typedef unsigned long       uint32;

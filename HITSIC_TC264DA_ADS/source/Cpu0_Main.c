@@ -45,6 +45,7 @@
 #pragma section all "cpu0_dsram"
 //IfxCpu_syncEvent g_cpuSyncEvent;
     //AI控制参量
+#define send_AI_num   7
 int16 temp;
 int16 servo_value;
 extern const unsigned char model1[];
@@ -185,17 +186,33 @@ IFX_INTERRUPT(cc61_pit_ch1_isr, 0, CCU6_1_CH1_ISR_PRIORITY)
 
 void ai_process(void)
 {
-    for(uint8 i=0;i<=6;i++)
+
+    uint16 LV_A[send_AI_num][SampleTimes_AI];
+    for (uint8 h=0;h<send_AI_num;h++)
     {
-        ai_data[i]=(int16)ADC_Get(AI_adc[i], ch_AI[i], ADC_8BIT);
+        for(uint8 i=0;i<=SampleTimes_AI-1;i++)
+        {
+         /*获取采样初值*/
+            LV_A[h][i] = ADC_Get(AI_adc[h], ch_AI[h], ADC_8BIT);
+        }
     }
-    ai_data[0]=(int8)((127*(int16)ai_data[0])/Max[8]);
-    ai_data[1]=(int8)((127*(int16)ai_data[1])/Max[9]);
-    ai_data[2]=(int8)((127*(int16)ai_data[2])/Max[10]);
-    ai_data[3]=(int8)((127*(int16)ai_data[3])/Max[11]);
-    ai_data[4]=(int8)((127*(int16)ai_data[4])/Max[12]);
-    ai_data[5]=(int8)((127*(int16)ai_data[5])/Max[13]);
-    ai_data[6]=(int8)((127*(int16)ai_data[6])/Max[14]);
+    float AI[send_AI_num]={0};
+    float AI_average[send_AI_num]={0};
+    for(uint8 h=0;h<send_AI_num;h++)
+    {
+        for(uint8 i=0;i<=SampleTimes_AI-1;i++)
+        {
+            AI[h]+=(float)LV_A[h][i];
+        }
+        AI_average[h]=AI[h]/SampleTimes_AI;
+    }
+    for(uint8 k=0;k<7;k++)
+    {
+        ai_data[k]=(int8)((int16)((127*AI_average[k])/Max[k+8]));
+    }
+
+
+
     ai_data_flag = 1;
     if(ai_data_flag)
     {

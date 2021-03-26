@@ -20,8 +20,8 @@
 
 #define AD_NUM 7
 #define AI_NUM 9
-#define SampleTimes 28
-#define SampleTimes_AI 28
+#define SampleTimes 40
+#define SampleTimes_AI 40
 #define SendDataTime   11
 /**********************************************************************************************************************
 *  @brief      获取AD转化值
@@ -34,11 +34,9 @@
 **********************************************************************************************************************/
 
 void LV_Sample(void);
-void LV_Get_Val(void);
 void print_AD(void);
 void swap(uint16 *a,uint16 *b);
 void get_err(void);
-void get_Wifi_AD(void);
 void Elec_process(void);
 void recognize_road(void);
 void Get_AI_AD (void);
