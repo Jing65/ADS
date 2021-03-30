@@ -33,14 +33,14 @@ void key_start(void)
              If_Start = 1;
           }
     }
-    if(If_Start == 1)
-    {
-           if(!GPIO_Read(P20,8))
-          {
-             Delay_ms(STM1,200);
-             If_Start = 0;
-          }
-    }
+//    if(If_Start == 1)
+//    {
+//           if(!GPIO_Read(P20,8))
+//          {
+//             Delay_ms(STM1,200);
+//             If_Start = 0;
+//          }
+//    }
 }
 
 
@@ -222,9 +222,9 @@ void CreatMenu(void)//**创建并插入一个新项需要增加一个新ITEMID枚举项***
     InsertItem(Item, MOTOR, MOTOR_2);
     InsertItem(Item, MOTOR, MOTOR_3);
     InsertItem(Item, MOTOR, MOTOR_4);
-    Item[U_1] = CreatItem(paraI_item, "collect_max", 0, 1);
+    Item[U_1] = CreatItem(paraI_item, "collect_m", 0, 1);
     Item[U_2] = CreatItem(paraI_item, "process_ai", 0, 1);
-    Item[U_3] = CreatItem(paraF_item, "XXXX", -20, 20);
+    Item[U_3] = CreatItem(paraI_item, "short_con", 0, 1);
     Item[U_4] = CreatItem(paraF_item, "XXXX", -20, 20);
     Item[U_5] = CreatItem(stateF_item, "RXXX", -500, 500);
     InsertItem(Item, UNUSE, U_1);
@@ -245,6 +245,7 @@ void MenuInit(void)
     Item[LIMIT_S].item_data.floatData=LIMIT_SE;
     Item[U_1].item_data.intData=collect_max_flag;
     Item[U_2].item_data.intData=process_type_ai;
+    Item[U_3].item_data.intData=short_control;
 }
 
 void Read_flash(void)
@@ -258,6 +259,7 @@ void Read_flash(void)
     KI_m=Page_Read(0,6,float);
     collect_max_flag=Page_Read(0,7,uint8);
     process_type_ai=Page_Read(0,8,uint8);
+    short_control=Page_Read(0,9,uint8);
 }
 
 void DataUpdate(void)
@@ -275,6 +277,7 @@ void DataUpdate(void)
      servo_mid=Item[MID_SERVO].item_data.floatData;
      collect_max_flag = (uint8)Item[U_1].item_data.intData;
      process_type_ai  = (uint8)Item[U_2].item_data.intData;
+     short_control  = (uint8)Item[U_3].item_data.intData;
 }
 
 void Save_data(void)
@@ -288,6 +291,7 @@ void Save_data(void)
     CAR_BUFFER[7]=float_conversion_uint32(KI_m);
     CAR_BUFFER[8]=collect_max_flag ;
     CAR_BUFFER[9]=process_type_ai;
+    CAR_BUFFER[10]=short_control;
     Sector_Erase(0);
     for(uint8 i=0;i<PARA_MAX-1;i++)
     {

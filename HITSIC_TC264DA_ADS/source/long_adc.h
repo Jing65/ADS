@@ -20,8 +20,8 @@
 
 #define AD_NUM 7
 #define AI_NUM 9
-#define SampleTimes 40
-#define SampleTimes_AI 40
+#define SampleTimes 20
+#define SampleTimes_AI 20
 #define SendDataTime   11
 /**********************************************************************************************************************
 *  @brief      获取AD转化值
@@ -40,6 +40,8 @@ void get_err(void);
 void Elec_process(void);
 void recognize_road(void);
 void Get_AI_AD (void);
+void Short_process(void);
+void Long_process(void);
 //void Save_ADMAX(void);
 //void Read_AD(void);
 extern float err_synthetical_now;
@@ -47,7 +49,7 @@ extern float AD[(AD_NUM+AI_NUM)];
 extern float Max[(AD_NUM+AI_NUM)];
 extern uint8 If_Start;
 extern uint8 collect_max_flag;
-extern int type_of_road;
+extern uint8 type_of_road;
 //控制ad采数数组
 
 

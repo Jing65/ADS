@@ -40,7 +40,7 @@
 #include "SmartCar_Eru.h"
 #include "Init.h"
 #include "long_adc.h"
-#include "ad_ai.h"
+
 
 #pragma section all "cpu0_dsram"
 //IfxCpu_syncEvent g_cpuSyncEvent;
@@ -101,6 +101,8 @@ int core0_main(void)
     Uart_init();
     //电感初始化
     elec_init();
+    //陀螺仪初始化
+    MPU_Init();
     //菜单就绪
     Read_flash();
     if(!GPIO_Read(P20,7))
@@ -126,7 +128,8 @@ int core0_main(void)
 
     while(TRUE)
     {
-        //拨码3控制是否使用菜单,拨码6控制电机启动，拨码5电机停止，拨码1刷新屏幕（启用菜单时有效），拨码4控制是否读取法最大值数组
+        //拨码3控制是否使用菜单,拨码6控制电机启动，拨码5电机停止，拨码1刷新屏幕（启用菜单时有效），拨码4控制是否读取法最大值数组，拨码2控制采短前瞻还是长前瞻
+
         //
         //菜单按键操作检测，
         key_start();

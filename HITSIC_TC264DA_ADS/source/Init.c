@@ -109,5 +109,9 @@ void Uart_init(void)
     SmartCar_Uart_Init(IfxAsclin0_TX_P15_2_OUT,IfxAsclin0_RXB_P15_3_IN,921600,0);
 }
 
+void  MPU_Init(void)
+{
+
+}
 
 

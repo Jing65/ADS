@@ -32,7 +32,8 @@ uint8 channel_adc[AD_NUM]={ADC_2,ADC_0,ADC_1,ADC_0,ADC_1,ADC_0,ADC_1};
 //AI电感采数数组
 uint8 channel_AI[AI_NUM]={ADC0_CH1_A1,ADC1_CH9_A25,ADC1_CH4_A20,ADC1_CH0_A16,ADC0_CH8_A8,ADC0_CH6_A6,ADC0_CH4_A4,ADC0_CH2_A2,ADC0_CH0_A0};
 uint8 channel_AI_adc[AI_NUM]={ADC_0,ADC_1,ADC_1,ADC_1,ADC_0,ADC_0,ADC_0,ADC_0,ADC_0};
-
+static float Average[AD_NUM];
+static float Average_AI[AI_NUM];
 //typedef enum
 //{
 //    //ADC0可选引脚
@@ -73,13 +74,17 @@ uint8 channel_AI_adc[AI_NUM]={ADC_0,ADC_1,ADC_1,ADC_1,ADC_0,ADC_0,ADC_0,ADC_0,AD
 //}VADC_CHN_enum;
 
 //上位机传回的数组
-int type_of_road = 0;
-int sum_of_SCFTM=0;
+uint8 type_of_road = 0;
+int16 sum_of_SCFTM=0;
 _Bool send_data_flag=0;//1：ad数据采集完成   0：ad数据未采集完成
 uint8 collect_max_flag = 0;
 uint8 send_buff[SendDataTime];//WIFI传adc数据
 float Max[(AD_NUM+AI_NUM)];
 //static uint32 Save_max[(AD_NUM+AI_NUM)];
+int16 right_threshould=9;
+int16 cancel_right_ad=115;
+int16 _SCFTM=15;
+
 void swap(uint16 *a,uint16 *b)
 {
     uint16 temp=*a;
@@ -87,23 +92,49 @@ void swap(uint16 *a,uint16 *b)
     *b=temp;
 }
 
-float Average[AD_NUM];
-float Average_AI[AI_NUM];
 void LV_Sample(void)                             // adc采集函数
 {
     uint16 LV_control[AD_NUM][SampleTimes];
     uint16 LV_AI[AI_NUM][SampleTimes_AI];
-    float transfer[AD_NUM];
-    float transfer_AI[AI_NUM];
-    for (uint8 h=0;h<AD_NUM;h++)
+    float transfer[AD_NUM]={0};
+    float transfer_AI[AI_NUM]={0};
+    if(short_control==0)
     {
-        for(uint8 i=0;i<=SampleTimes-1;i++)
-        {
-         /*获取采样初值*/
-            LV_control[h][i] = ADC_Get(channel_adc[h], channel_name[h], ADC_8BIT);
+        for (uint8 h=0;h<AD_NUM;h++)
+            {
+                for(uint8 i=0;i<=SampleTimes-1;i++)
+                {
+                 /*获取采样初值*/
+                    LV_control[h][i] = ADC_Get(channel_adc[h], channel_name[h], ADC_8BIT);
 
+                }
+            }
+
+        for(uint8 i=0;i<AD_NUM;i++)
+        {
+            for(uint8 j=0;j<=SampleTimes-1;j++)
+            {
+                 if(LV_control[i][j]>255)//剔除毛刺信号
+                 {
+                     LV_control[i][j]=255;
+                 }
+            }
+        }
+
+        for(uint8 k=0;k<AD_NUM;k++)
+        {
+            for(uint8 i=0;i<SampleTimes;i++)
+            {
+                transfer[k]+=(float)((int16)LV_control[k][i]);
+            }
+            Average[k]=transfer[k]/SampleTimes;
+            if( Average[k] < MinLVGot )
+            {
+                Average[k] = MinLVGot;
+            }
         }
     }
+
     for (uint8 h=0;h<AI_NUM;h++)
     {
         for(uint8 i=0;i<=SampleTimes_AI-1;i++)
@@ -113,33 +144,9 @@ void LV_Sample(void)                             // adc采集函数
         }
     }
 
-    for(uint8 i=0;i<AD_NUM;i++)
-    {
-        for(uint8 j=0;j<=SampleTimes-1;j++)
-        {
-             if(LV_control[i][j]>255)//剔除毛刺信号
-             {
-                 LV_control[i][j]=255;
-             }
-        }
-    }
-
-    for(uint8 k=0;k<AD_NUM;k++)
-    {
-        for(uint8 i=0;i<=SampleTimes-1;i++)
-        {
-            transfer[k]+=(float)LV_control[k][i];
-        }
-        Average[k]=transfer[k]/SampleTimes;
-        if( Average[k] < MinLVGot )
-        {
-            Average[k] = MinLVGot;
-        }
-    }
-
     for(uint8 i=0;i<AI_NUM;i++)
            {
-               for(uint8 j=0;j<=SampleTimes_AI-1;j++)
+               for(uint8 j=0;j<SampleTimes_AI;j++)
                {
                     if(LV_AI[i][j]>255)//剔除毛刺信号
                     {
@@ -152,7 +159,7 @@ void LV_Sample(void)                             // adc采集函数
            {
                for(uint8 i=0;i<=SampleTimes-1;i++)
                {
-                   transfer_AI[k]+=(float)LV_AI[k][i];
+                   transfer_AI[k]+=(float)((int16)LV_AI[k][i]);
                }
                Average_AI[k]=transfer_AI[k]/SampleTimes_AI;
                if( Average_AI[k] < MinLVGot )
@@ -171,7 +178,8 @@ void Get_AI_AD (void)
        {
            if(!send_data_flag)
            {
-
+               if(short_control==0)
+               {
                    for(uint8 i= 0;i<AD_NUM;i++)
                    {
                        //暂时去掉归一化 AD[i] = (100*LV[i])/Max[i];//(K = 100)
@@ -179,23 +187,34 @@ void Get_AI_AD (void)
                        //AD[i] = transfer[i];
 
                    }
-                   for(uint8 i= 0;i<AI_NUM;i++)
-                   {
-                       AD[i+AD_NUM] = (127*Average_AI[i])/Max[i+AD_NUM];//(K = 100)
+               }
+
+                       AD[7] = (127*Average_AI[0])/Max[7];//(K = 100)
+                       AD[8] = (127*Average_AI[1])/Max[8];
+                       AD[9] = (200*Average_AI[2])/Max[9];
+                       AD[10] = (127*Average_AI[3])/Max[10];
+                       AD[11] = (127*Average_AI[4])/Max[11];
+                       AD[12] = (127*Average_AI[5])/Max[12];
+                       AD[13] = (200*Average_AI[6])/Max[13];
+                       AD[14] = (127*Average_AI[7])/Max[14];
+                       AD[15] = (127*Average_AI[8])/Max[15];
                        //AD[i+AD_NUM] = transfer_AI[i];
-                   }
-                   send_data_flag=1;
-              }
+
+               send_data_flag=1;
+           }
        }
        else if (collect_max_flag==1)
        {
-           for(uint8 i=0;i<AD_NUM;i++)
+           if (short_control==0)
            {
-               if(Average[i] > Max[i])
+               for(uint8 i=0;i<AD_NUM;i++)
                {
-                 Max[i] = Average[i];
+                   if(Average[i] > Max[i])
+                   {
+                     Max[i] = Average[i];
+                   }
+                   AD[i] = Average[i];
                }
-               AD[i] = Average[i];
            }
            for(uint8 i=0;i<AI_NUM;i++)
            {
@@ -213,12 +232,26 @@ void Get_AI_AD (void)
 
 void get_err(void)
 {
-   //横电感差比积，右一减左一
-   err_ad_now[0]=(AD[1]-AD[0])/(AD[1]*AD[0]+1);
-   //竖横电感差比积，右减左+10减小竖电感差比积抖动
-   err_ad_now[1]=(AD[3]-AD[2])/(AD[3]*AD[2]+10);
-   //给竖电感较小的权重
-   err_synthetical_now=0*err_ad_now[1]+1*err_ad_now[0];
+    if(short_control==0)
+    {
+        //横电感差比积，右一减左一
+        err_ad_now[0]=(AD[1]-AD[0])/(AD[1]*AD[0]+1);
+        //竖横电感差比积，右减左+10减小竖电感差比积抖动
+        err_ad_now[1]=(AD[3]-AD[2])/(AD[3]*AD[2]+10);
+        //给竖电感较小的权重
+        err_synthetical_now=0*err_ad_now[1]+1*err_ad_now[0];
+    }
+    if(short_control==1)
+    {
+        //横电感差比积，右一减左一
+        err_ad_now[0]=(AD[14]-AD[8])/(AD[14]*AD[8]+1);
+        //竖横电感差比积，右减左+10减小竖电感差比积抖动
+        err_ad_now[1]=(AD[13]-AD[9])/(AD[9]*AD[13]+2);
+        //给竖电感较小的权重
+        err_synthetical_now=0*err_ad_now[1]+1*err_ad_now[0];
+    }
+
+
 }
 
 
@@ -231,49 +264,15 @@ void get_err(void)
 **********************************************************************************************************************/
 void recognize_road(void)
 {
-   //直角弯标志位
-   if (AD[2]-AD[3]<-40&&AD[2]<15)
-   {
-       type_of_road=11;
-   }
-   if (AD[2]-AD[3]>40&&AD[3]<15)
-   {
-       type_of_road=10;
-   }
-   if(type_of_road!=21)
-   {
-       if (AD[6]>=200)
-       {
-           type_of_road=20;
-       }
-   }
-//   if(type_of_road!=20)
-//   {
-//       if (AD[6]>=200&&AD[0]-AD[1]<-10)
-//       {
-//           type_of_road=21;
-//       }
-//   }
+    if (short_control==0)
+    {
+        Long_process();
+    }
+    else if(short_control==1)
+    {
+        Short_process();
+    }
 
-   //清除直角弯标志位
-   if (type_of_road==11||type_of_road==10)
-   {
-       sum_of_SCFTM++;
-       if (AD[6]>50&&sum_of_SCFTM>10)
-       {
-           type_of_road=0;
-           sum_of_SCFTM=0;
-       }
-   }
-   if (type_of_road==20||type_of_road==21)
-   {
-       sum_of_SCFTM++;
-       if (AD[6]<=130&&AD[1]+AD[0]<100&&sum_of_SCFTM>10)
-       {
-           type_of_road=0;
-           sum_of_SCFTM=0;
-       }
-   }
 
 
 
@@ -305,6 +304,90 @@ void recognize_road(void)
 //    }
 }
 
+/**********************************************************************************************************************
+*  @brief      电磁识别道路类型
+*  @since      v1.1
+*  Sample usage:  0      直道+45度转角
+*                 10/11  90度转角左、右打死
+*                 20/21  20左环、21右环
+**********************************************************************************************************************/
+void Long_process(void)
+{
+    //直角弯标志位
+    if (AD[2]-AD[3]<-40&&AD[2]<15)
+    {
+        type_of_road=11;
+    }
+    if (AD[2]-AD[3]>40&&AD[3]<15)
+    {
+        type_of_road=10;
+    }
+    if(type_of_road!=21)
+    {
+        if (AD[6]>=200)
+        {
+            type_of_road=21;
+        }
+    }
+ //   if(type_of_road!=20)
+ //   {
+ //       if (AD[6]>=200&&AD[0]-AD[1]<-10)
+ //       {
+ //           type_of_road=21;
+ //       }
+ //   }
+    //清除直角弯标志位
+    if (type_of_road==11||type_of_road==10)
+    {
+        sum_of_SCFTM++;
+        if (AD[6]>50&&sum_of_SCFTM>10)
+        {
+            type_of_road=0;
+            sum_of_SCFTM=0;
+        }
+    }
+    if (type_of_road==20||type_of_road==21)
+    {
+        sum_of_SCFTM++;
+        if (AD[6]<=130&&AD[1]+AD[0]<100&&sum_of_SCFTM>10)
+        {
+            type_of_road=0;
+            sum_of_SCFTM=0;
+        }
+    }
+}
+
+/**********************************************************************************************************************
+*  @brief      电磁识别道路类型
+*  @since      v1.1
+*  Sample usage:  0      直道+45度转角
+*                 10/11  90度转角左、右打死
+*                 20/21  20左环、21右环
+**********************************************************************************************************************/
+void Short_process(void)
+{
+    float right_ad,left_ad,mid_ad;
+    right_ad=AD[13];
+    left_ad=AD[9];
+    mid_ad=AD[11];
+    if((int16)(right_ad-left_ad)>right_threshould&&left_ad<2)
+    {
+        type_of_road=11;
+    }
+    if((int16)(left_ad-right_ad)>right_threshould&&right_ad<2)
+    {
+        type_of_road=10;
+    }
+    if (type_of_road==11||type_of_road==10)
+    {
+        sum_of_SCFTM++;
+        if ((int16)mid_ad>cancel_right_ad&&sum_of_SCFTM>_SCFTM)
+        {
+            type_of_road=0;
+            sum_of_SCFTM=0;
+        }
+    }
+}
 /**********************************************************************************************************************
 *  @brief      出赛道保护
 *  @since      v1.1
@@ -339,14 +422,14 @@ void Send_Data(void)
 //        {
 //            send_buff[(i+2)]=(uint8)((int8)AD[(i+7)]-128);
 //        }
-        send_buff[2]=(uint8)((int8)AD[8]-128);
-        send_buff[3]=(uint8)((int8)AD[9]-128);
-        send_buff[4]=(uint8)((int8)AD[10]-128);
-        send_buff[5]=(uint8)((int8)AD[11]-128);
-        send_buff[6]=(uint8)((int8)AD[12]-128);
-        send_buff[7]=(uint8)((int8)AD[13]-128);
-        send_buff[8]=(uint8)((int8)AD[14]-128);
-        send_buff[9]=(uint8)((int8)(127*(pwm_servo-servo_mid)/1.8));
+        send_buff[2]=(uint8)((int8)((int16)AD[8]-128));
+        send_buff[3]=(uint8)((int8)((int16)AD[9]-128));
+        send_buff[4]=(uint8)((int8)((int16)AD[10]-128));
+        send_buff[5]=(uint8)((int8)((int16)AD[11]-128));
+        send_buff[6]=(uint8)((int8)((int16)AD[12]-128));
+        send_buff[7]=(uint8)((int8)((int16)AD[13]-128));
+        send_buff[8]=(uint8)((int8)((int16)AD[14]-128));
+        send_buff[9]=(uint8)((int8)((int16)(127*(pwm_servo-servo_mid)/1.8)));
         send_buff[10]=0x5a;
         SmartCar_Uart_Transfer(send_buff,11,0);
         send_data_flag=0;
@@ -360,7 +443,7 @@ void Elec_process(void)
     Get_AI_AD();
     recognize_road();
     get_err();
-    out_of_road();
+//    out_of_road();
     Send_Data();
 }
 

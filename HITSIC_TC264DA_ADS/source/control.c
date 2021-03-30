@@ -6,11 +6,11 @@
  */
 #include "control.h"
 float pwm_servo=7.35;
-float servo_mid = 7.35;
+float servo_mid = 7.15;
 float KP_m = 32;
 float KI_m = 17;
-float KP_S_E = 10.5;//电磁舵机调参
-float KD_S_E = 0.2;//电磁舵机调参
+float KP_S_E = 15.5;//电磁舵机调参
+float KD_S_E = 8.2;//电磁舵机调参
 //static float Stop_Min = 2;//出赛到保护的电磁的最小值
 static float pwm_servo_variation=0;
 static float err_synthetical_last = 0;
@@ -26,6 +26,8 @@ float Meter_every_Round = 0.48564;//数字需改！！！
 float LIMIT_SE = 1.8;//需要改（不改舵机可能不动）
 static float LIMIT_MO = 80;//需要改（补钙电机可能不动）
 //static float pwm_servo_die = 0.1;
+uint8 short_control = 0;
+int16 sigle_k=0.4;
 
 
 void Moto_Speed(void)//电机控制
@@ -122,11 +124,11 @@ void Servo_Elec(void)//电磁舵机控制
     }
     else if (type_of_road==20)//20左环
     {
-        pwm_servo =servo_mid-0.4*LIMIT_SE;
+        pwm_servo =servo_mid-(float)sigle_k*LIMIT_SE/10;
     }
     else if (type_of_road==21)//21右环
     {
-        pwm_servo =servo_mid+0.4*LIMIT_SE;
+        pwm_servo =servo_mid+(float)sigle_k*LIMIT_SE/10;
     }
     SmartCar_Gtm_Pwm_Setduty(&Servo_PIN, (uint32)(pwm_servo*100));
 //    /*********************************测舵机中值**********************************/
