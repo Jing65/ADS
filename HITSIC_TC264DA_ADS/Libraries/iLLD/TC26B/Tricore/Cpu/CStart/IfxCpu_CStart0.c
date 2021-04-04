@@ -231,6 +231,7 @@ void _START(void)
 #pragma protect on
 #pragma section farrom "bmhd_0"
 #endif
+
 #if defined(__DCC__)
 #pragma section CONST ".bmhd_0" R
 #endif

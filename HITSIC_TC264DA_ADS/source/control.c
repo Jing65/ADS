@@ -27,8 +27,8 @@ float LIMIT_SE = 1.8;//需要改（不改舵机可能不动）
 static float LIMIT_MO = 80;//需要改（补钙电机可能不动）
 //static float pwm_servo_die = 0.1;
 uint8 short_control = 0;
-int16 sigle_k=0.4;
-
+int16 sigle_k=4;
+int16 acc_encoder=0;
 
 void Moto_Speed(void)//电机控制
 {
@@ -43,8 +43,10 @@ void Moto_Speed(void)//电机控制
     }
 //    Moto_Speed_Goal = Moto_Speed_Goal_Set;
     //电机PID控制
-    Moto_Speed_Real = 0.0001 * (float)(-SmartCar_Encoder_Get(GPT12_T2)) * Meter_every_Round / 0.005;
-    SmartCar_Encoder_Clear(GPT12_T2);//清除编码器
+    int16 ecoder_num=-SmartCar_Encoder_Get(GPT12_T2);
+    SmartCar_Encoder_Clear(GPT12_T2);
+    Moto_Speed_Real = 0.0001 * ((float)ecoder_num) * Meter_every_Round / 0.005;
+    //清除编码器
     Error_Moto_Now = (Moto_Speed_Goal - Moto_Speed_Real);
     pwm_moto_add = ((KP_m * (Error_Moto_Now - Error_Moto_Last)) + (KI_m * Error_Moto_Now));
     Error_Moto_Last = Error_Moto_Now;
@@ -71,7 +73,11 @@ void Moto_Speed(void)//电机控制
         SmartCar_Gtm_Pwm_Setduty(&Motor_PIN_0,(uint32)(-pwm_moto*100));
         SmartCar_Gtm_Pwm_Setduty(&Motor_PIN_1,0);
     }
-
+    acc_encoder += ecoder_num;
+    if(acc_encoder>32600)
+    {
+        acc_encoder=0;
+    }
 /**************************************************开环测电机*************************************************/
 //    static uint32 flag=0;
 //    flag++;

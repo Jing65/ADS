@@ -1,21 +1,21 @@
 /*
  * long_adc.c
  *
- *  Created on: 2021Äê3ÔÂ7ÈÕ
+ *  Created on: 2021å¹´3æœˆ7æ—¥
  *      Author: HP
  */
 
 /*
  * sc_adc.c
  *
- *  Created on: 2021Äê2ÔÂ27ÈÕ
+ *  Created on: 2021å¹´2æœˆ27æ—¥
  *      Author: SYX
  */
 
 #include "long_adc.h"
 
 
-//AI²ÉÊıÊı×éºÍ¿ØÖÆ²ÉÊıÊı×é·Ö¿ª
+//AIé‡‡æ•°æ•°ç»„å’Œæ§åˆ¶é‡‡æ•°æ•°ç»„åˆ†å¼€
 
 
 float AD[(AD_NUM+AI_NUM)];
@@ -23,20 +23,20 @@ float MinLVGot=0.05;
 float err_ad_now[2]={0,0};
 float err_synthetical_now = 0;
 //static float Max[(AD_NUM+AI_NUM)];
-_Bool Flag_Find_Max = 0;//Ò»¿ªÊ¼²»¿ªÊ¼Ñ°ÕÒ
-uint8 If_Start = 0;//ÑÓÊ±·¢³µ
+_Bool Flag_Find_Max = 0;//ä¸€å¼€å§‹ä¸å¼€å§‹å¯»æ‰¾
+uint8 If_Start = 0;//å»¶æ—¶å‘è½¦
 uint8 channel_name[AD_NUM]={ADC2_CH4_A36,ADC0_CH3_A3,ADC1_CH8_A24,ADC0_CH5_A5,ADC1_CH5_A21,ADC0_CH7_A7,ADC1_CH1_A17};
 uint8 channel_adc[AD_NUM]={ADC_2,ADC_0,ADC_1,ADC_0,ADC_1,ADC_0,ADC_1};
-//Ê¹ADÍ¨µÀ 0µ½6·Ö±ğ¶ÔÓ¦ ×ó1ºá¡¢ÓÒÒ»ºá¡¢×óÊú¡¢ÓÒÊú¡¢×ó¶şºá¡¢ÓÒ¶şºá¡¢ÖĞ¼äµç¸Ğ
+//ä½¿ADé€šé“ 0åˆ°6åˆ†åˆ«å¯¹åº” å·¦1æ¨ªã€å³ä¸€æ¨ªã€å·¦ç«–ã€å³ç«–ã€å·¦äºŒæ¨ªã€å³äºŒæ¨ªã€ä¸­é—´ç”µæ„Ÿ
 
-//AIµç¸Ğ²ÉÊıÊı×é
+//AIç”µæ„Ÿé‡‡æ•°æ•°ç»„
 uint8 channel_AI[AI_NUM]={ADC0_CH1_A1,ADC1_CH9_A25,ADC1_CH4_A20,ADC1_CH0_A16,ADC0_CH8_A8,ADC0_CH6_A6,ADC0_CH4_A4,ADC0_CH2_A2,ADC0_CH0_A0};
 uint8 channel_AI_adc[AI_NUM]={ADC_0,ADC_1,ADC_1,ADC_1,ADC_0,ADC_0,ADC_0,ADC_0,ADC_0};
 static float Average[AD_NUM];
 static float Average_AI[AI_NUM];
 //typedef enum
 //{
-//    //ADC0¿ÉÑ¡Òı½Å
+//    //ADC0å¯é€‰å¼•è„š
 //    ADC0_CH0_A0   = 0*16 + 0,
 //    ADC0_CH1_A1,
 //    ADC0_CH2_A2,
@@ -51,7 +51,7 @@ static float Average_AI[AI_NUM];
 //    ADC0_CH12_A12,
 //    ADC0_CH13_A13,
 //
-//    //ADC1¿ÉÑ¡Òı½Å
+//    //ADC1å¯é€‰å¼•è„š
 //    ADC1_CH0_A16  = 1*16 + 0,
 //    ADC1_CH1_A17  = 1*16 + 1,
 //    ADC1_CH4_A20  = 1*16 + 4,
@@ -59,7 +59,7 @@ static float Average_AI[AI_NUM];
 //    ADC1_CH8_A24  = 1*16 + 8,
 //    ADC1_CH9_A25  = 1*16 + 9,
 //
-//    //ADC2¿ÉÑ¡Òı½Å
+//    //ADC2å¯é€‰å¼•è„š
 //    ADC2_CH3_A35  = 2*16 + 3,
 //    ADC2_CH4_A36,
 //    ADC2_CH5_A37,
@@ -73,17 +73,21 @@ static float Average_AI[AI_NUM];
 //    ADC2_CH15_A49,
 //}VADC_CHN_enum;
 
-//ÉÏÎ»»ú´«»ØµÄÊı×é
+//ä¸Šä½æœºä¼ å›çš„æ•°ç»„
 uint8 type_of_road = 0;
-int16 sum_of_SCFTM=0;
-_Bool send_data_flag=0;//1£ºadÊı¾İ²É¼¯Íê³É   0£ºadÊı¾İÎ´²É¼¯Íê³É
+
+_Bool send_data_flag=0;//1ï¼šadæ•°æ®é‡‡é›†å®Œæˆ   0ï¼šadæ•°æ®æœªé‡‡é›†å®Œæˆ
 uint8 collect_max_flag = 0;
-uint8 send_buff[SendDataTime];//WIFI´«adcÊı¾İ
+uint8 send_buff[SendDataTime];//WIFIä¼ adcæ•°æ®
 float Max[(AD_NUM+AI_NUM)];
 //static uint32 Save_max[(AD_NUM+AI_NUM)];
-int16 right_threshould=9;
-int16 cancel_right_ad=115;
-int16 _SCFTM=15;
+//int16 right_threshould=15;
+//int16 cancel_right_ad=115;
+//int16 _SCFTM=1000;
+
+//ä¼ ç»Ÿæ§åˆ¶çš„ç®—æ³•é˜ˆå€¼åˆ¤æ–­ç»“æ„ä½“
+Judgment_threshold long_theshold,short_theshold;
+
 
 void swap(uint16 *a,uint16 *b)
 {
@@ -92,7 +96,7 @@ void swap(uint16 *a,uint16 *b)
     *b=temp;
 }
 
-void LV_Sample(void)                             // adc²É¼¯º¯Êı
+void LV_Sample(void)                             // adcé‡‡é›†å‡½æ•°
 {
     uint16 LV_control[AD_NUM][SampleTimes];
     uint16 LV_AI[AI_NUM][SampleTimes_AI];
@@ -104,7 +108,7 @@ void LV_Sample(void)                             // adc²É¼¯º¯Êı
             {
                 for(uint8 i=0;i<=SampleTimes-1;i++)
                 {
-                 /*»ñÈ¡²ÉÑù³õÖµ*/
+                 /*è·å–é‡‡æ ·åˆå€¼*/
                     LV_control[h][i] = ADC_Get(channel_adc[h], channel_name[h], ADC_8BIT);
 
                 }
@@ -114,20 +118,30 @@ void LV_Sample(void)                             // adc²É¼¯º¯Êı
         {
             for(uint8 j=0;j<=SampleTimes-1;j++)
             {
-                 if(LV_control[i][j]>255)//ÌŞ³ıÃ«´ÌĞÅºÅ
+                 if(LV_control[i][j]>256)//å‰”é™¤æ¯›åˆºä¿¡å·
                  {
-                     LV_control[i][j]=255;
+                     LV_control[i][j]=256;
                  }
             }
         }
-
         for(uint8 k=0;k<AD_NUM;k++)
         {
-            for(uint8 i=0;i<SampleTimes;i++)
+            for(uint8 i=0;i<=SampleTimes-2;i++)
+            {
+                for(uint8 j=i+1;j<=SampleTimes-1;j++)
+                {
+                    if(LV_control[k][i]>LV_control[k][j])
+                    swap(&LV_control[k][i],&LV_control[k][j]);//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½swapï¿½ï¿½ï¿½ï¿½ï¿½Ô¼ï¿½Ğ´
+                }
+            }
+        }
+        for(uint8 k=0;k<AD_NUM;k++)
+        {
+            for(uint8 i=3;i<SampleTimes-3;i++)
             {
                 transfer[k]+=(float)((int16)LV_control[k][i]);
             }
-            Average[k]=transfer[k]/SampleTimes;
+            Average[k]=transfer[k]/(SampleTimes-6.0);
             if( Average[k] < MinLVGot )
             {
                 Average[k] = MinLVGot;
@@ -139,7 +153,7 @@ void LV_Sample(void)                             // adc²É¼¯º¯Êı
     {
         for(uint8 i=0;i<=SampleTimes_AI-1;i++)
         {
-         /*»ñÈ¡²ÉÑù³õÖµ*/
+         /*è·å–é‡‡æ ·åˆå€¼*/
             LV_AI[h][i] = ADC_Get(channel_AI_adc[h], channel_AI[h], ADC_8BIT);
         }
     }
@@ -148,20 +162,30 @@ void LV_Sample(void)                             // adc²É¼¯º¯Êı
            {
                for(uint8 j=0;j<SampleTimes_AI;j++)
                {
-                    if(LV_AI[i][j]>255)//ÌŞ³ıÃ«´ÌĞÅºÅ
+                    if(LV_AI[i][j]>256)//å‰”é™¤æ¯›åˆºä¿¡å·
                     {
-                        LV_AI[i][j]=255;
+                        LV_AI[i][j]=256;
                     }
                }
            }
-
+    for(uint8 k=0;k<AI_NUM;k++)
+    {
+        for(uint8 i=0;i<=SampleTimes_AI-2;i++)
+        {
+            for(uint8 j=i+1;j<=SampleTimes_AI-1;j++)
+            {
+                if(LV_AI[k][i]>LV_AI[k][j])
+                swap(&LV_AI[k][i],&LV_AI[k][j]);
+            }
+        }
+    }
            for(uint8 k=0;k<AI_NUM;k++)
            {
-               for(uint8 i=0;i<=SampleTimes-1;i++)
+               for(uint8 i=3;i<=SampleTimes-4;i++)
                {
                    transfer_AI[k]+=(float)((int16)LV_AI[k][i]);
                }
-               Average_AI[k]=transfer_AI[k]/SampleTimes_AI;
+               Average_AI[k]=transfer_AI[k]/(SampleTimes_AI-6.0);
                if( Average_AI[k] < MinLVGot )
                {
                   Average_AI[k] = MinLVGot;
@@ -182,7 +206,7 @@ void Get_AI_AD (void)
                {
                    for(uint8 i= 0;i<AD_NUM;i++)
                    {
-                       //ÔİÊ±È¥µô¹éÒ»»¯ AD[i] = (100*LV[i])/Max[i];//(K = 100)
+                       //æš‚æ—¶å»æ‰å½’ä¸€åŒ– AD[i] = (100*LV[i])/Max[i];//(K = 100)
                        AD[i] = (100*Average[i])/Max[i];
                        //AD[i] = transfer[i];
 
@@ -191,11 +215,11 @@ void Get_AI_AD (void)
 
                        AD[7] = (127*Average_AI[0])/Max[7];//(K = 100)
                        AD[8] = (127*Average_AI[1])/Max[8];
-                       AD[9] = (200*Average_AI[2])/Max[9];
+                       AD[9] = (127*Average_AI[2])/Max[9];
                        AD[10] = (127*Average_AI[3])/Max[10];
                        AD[11] = (127*Average_AI[4])/Max[11];
                        AD[12] = (127*Average_AI[5])/Max[12];
-                       AD[13] = (200*Average_AI[6])/Max[13];
+                       AD[13] = (127*Average_AI[6])/Max[13];
                        AD[14] = (127*Average_AI[7])/Max[14];
                        AD[15] = (127*Average_AI[8])/Max[15];
                        //AD[i+AD_NUM] = transfer_AI[i];
@@ -234,20 +258,20 @@ void get_err(void)
 {
     if(short_control==0)
     {
-        //ºáµç¸Ğ²î±È»ı£¬ÓÒÒ»¼õ×óÒ»
+        //æ¨ªç”µæ„Ÿå·®æ¯”ç§¯ï¼Œå³ä¸€å‡å·¦ä¸€
         err_ad_now[0]=(AD[1]-AD[0])/(AD[1]*AD[0]+1);
-        //Êúºáµç¸Ğ²î±È»ı£¬ÓÒ¼õ×ó+10¼õĞ¡Êúµç¸Ğ²î±È»ı¶¶¶¯
+        //ç«–æ¨ªç”µæ„Ÿå·®æ¯”ç§¯ï¼Œå³å‡å·¦+10å‡å°ç«–ç”µæ„Ÿå·®æ¯”ç§¯æŠ–åŠ¨
         err_ad_now[1]=(AD[3]-AD[2])/(AD[3]*AD[2]+10);
-        //¸øÊúµç¸Ğ½ÏĞ¡µÄÈ¨ÖØ
+        //ç»™ç«–ç”µæ„Ÿè¾ƒå°çš„æƒé‡
         err_synthetical_now=0*err_ad_now[1]+1*err_ad_now[0];
     }
     if(short_control==1)
     {
-        //ºáµç¸Ğ²î±È»ı£¬ÓÒÒ»¼õ×óÒ»
+        //æ¨ªç”µæ„Ÿå·®æ¯”ç§¯ï¼Œå³ä¸€å‡å·¦ä¸€
         err_ad_now[0]=(AD[14]-AD[8])/(AD[14]*AD[8]+1);
-        //Êúºáµç¸Ğ²î±È»ı£¬ÓÒ¼õ×ó+10¼õĞ¡Êúµç¸Ğ²î±È»ı¶¶¶¯
+        //ç«–æ¨ªç”µæ„Ÿå·®æ¯”ç§¯ï¼Œå³å‡å·¦+10å‡å°ç«–ç”µæ„Ÿå·®æ¯”ç§¯æŠ–åŠ¨
         err_ad_now[1]=(AD[13]-AD[9])/(AD[9]*AD[13]+2);
-        //¸øÊúµç¸Ğ½ÏĞ¡µÄÈ¨ÖØ
+        //ç»™ç«–ç”µæ„Ÿè¾ƒå°çš„æƒé‡
         err_synthetical_now=0*err_ad_now[1]+1*err_ad_now[0];
     }
 
@@ -256,11 +280,11 @@ void get_err(void)
 
 
 /**********************************************************************************************************************
-*  @brief      µç´ÅÊ¶±ğµÀÂ·ÀàĞÍ
+*  @brief      ç”µç£è¯†åˆ«é“è·¯ç±»å‹
 *  @since      v1.1
-*  Sample usage:  0      Ö±µÀ+45¶È×ª½Ç
-*                 10/11  90¶È×ª½Ç×ó¡¢ÓÒ´òËÀ
-*                 20/21  20×ó»·¡¢21ÓÒ»·
+*  Sample usage:  0      ç›´é“+45åº¦è½¬è§’
+*                 10/11  90åº¦è½¬è§’å·¦ã€å³æ‰“æ­»
+*                 20/21  20å·¦ç¯ã€21å³ç¯
 **********************************************************************************************************************/
 void recognize_road(void)
 {
@@ -276,11 +300,11 @@ void recognize_road(void)
 
 
 
-   //Õı³£Ñ°¼£Æ«ÀëÈüµÀµÄÇé¿ö
+   //æ­£å¸¸å¯»è¿¹åç¦»èµ›é“çš„æƒ…å†µ
 //   if (type_of_road==0)
 //   {
 //          float ad_sort[5]={};
-//          ad_sort[0]=AD[0];//×óÒ»
+//          ad_sort[0]=AD[0];//å·¦ä¸€
 //          ad_sort[1]=AD[1];
 //          ad_sort[2]=AD[4];
 //          ad_sort[3]=AD[5];
@@ -305,28 +329,38 @@ void recognize_road(void)
 }
 
 /**********************************************************************************************************************
-*  @brief      µç´ÅÊ¶±ğµÀÂ·ÀàĞÍ
+*  @brief      ç”µç£è¯†åˆ«é“è·¯ç±»å‹
 *  @since      v1.1
-*  Sample usage:  0      Ö±µÀ+45¶È×ª½Ç
-*                 10/11  90¶È×ª½Ç×ó¡¢ÓÒ´òËÀ
-*                 20/21  20×ó»·¡¢21ÓÒ»·
+*  Sample usage:  0      ç›´é“+45åº¦è½¬è§’
+*                 10/11  90åº¦è½¬è§’å·¦ã€å³æ‰“æ­»
+*                 20/21  20å·¦ç¯ã€21å³ç¯
 **********************************************************************************************************************/
 void Long_process(void)
 {
-    //Ö±½ÇÍä±êÖ¾Î»
-    if (AD[2]-AD[3]<-40&&AD[2]<15)
+    //ç›´è§’å¼¯æ ‡å¿—ä½
+    float L_vertical,R_vertical,L_horizontal,R_horizontal,Mid_ad;
+    L_vertical=AD[2];
+    R_vertical=AD[3];
+    Mid_ad=AD[6];
+    L_horizontal=AD[0];
+    R_horizontal=AD[1];
+
+    if (R_vertical-L_vertical>long_theshold.right_threshould&&L_vertical<long_theshold.cross_misjudge)
     {
         type_of_road=11;
+        acc_encoder=0;
     }
-    if (AD[2]-AD[3]>40&&AD[3]<15)
+    if (L_vertical-R_vertical>long_theshold.right_threshould&&R_vertical<long_theshold.cross_misjudge)
     {
         type_of_road=10;
+        acc_encoder=0;
     }
     if(type_of_road!=21)
     {
-        if (AD[6]>=200)
+        if (Mid_ad>=long_theshold.round_midjudge)
         {
             type_of_road=21;
+            acc_encoder=0;
         }
     }
  //   if(type_of_road!=20)
@@ -336,60 +370,62 @@ void Long_process(void)
  //           type_of_road=21;
  //       }
  //   }
-    //Çå³ıÖ±½ÇÍä±êÖ¾Î»
+    //æ¸…é™¤ç›´è§’å¼¯æ ‡å¿—ä½
     if (type_of_road==11||type_of_road==10)
     {
-        sum_of_SCFTM++;
-        if (AD[6]>50&&sum_of_SCFTM>10)
+        if (Mid_ad>long_theshold.cancel_right_ad&&acc_encoder>long_theshold._SCFTM)
         {
             type_of_road=0;
-            sum_of_SCFTM=0;
         }
     }
     if (type_of_road==20||type_of_road==21)
     {
-        sum_of_SCFTM++;
-        if (AD[6]<=130&&AD[1]+AD[0]<100&&sum_of_SCFTM>10)
+
+        if (AD[6]<=130&&AD[1]+AD[0]<100&&acc_encoder>long_theshold._SCFTM)
         {
             type_of_road=0;
-            sum_of_SCFTM=0;
         }
     }
 }
 
 /**********************************************************************************************************************
-*  @brief      µç´ÅÊ¶±ğµÀÂ·ÀàĞÍ
+*  @brief      ç”µç£è¯†åˆ«é“è·¯ç±»å‹
 *  @since      v1.1
-*  Sample usage:  0      Ö±µÀ+45¶È×ª½Ç
-*                 10/11  90¶È×ª½Ç×ó¡¢ÓÒ´òËÀ
-*                 20/21  20×ó»·¡¢21ÓÒ»·
+*  Sample usage:  0      ç›´é“+45åº¦è½¬è§’
+*                 10/11  90åº¦è½¬è§’å·¦ã€å³æ‰“æ­»
+*                 20/21  20å·¦ç¯ã€21å³ç¯
 **********************************************************************************************************************/
 void Short_process(void)
 {
-    float right_ad,left_ad,mid_ad;
-    right_ad=AD[13];
-    left_ad=AD[9];
-    mid_ad=AD[11];
-    if((int16)(right_ad-left_ad)>right_threshould&&left_ad<2)
-    {
-        type_of_road=11;
-    }
-    if((int16)(left_ad-right_ad)>right_threshould&&right_ad<2)
-    {
-        type_of_road=10;
-    }
-    if (type_of_road==11||type_of_road==10)
-    {
-        sum_of_SCFTM++;
-        if ((int16)mid_ad>cancel_right_ad&&sum_of_SCFTM>_SCFTM)
-        {
-            type_of_road=0;
-            sum_of_SCFTM=0;
-        }
-    }
+//    float right_ad,left_ad,mid_ad;
+//    right_ad=AD[13];
+//    left_ad=AD[9];
+//    mid_ad=AD[11];
+//    if(type_of_road!=10&&type_of_road!=11)
+//    {
+//        if((int16)(right_ad-left_ad)>right_threshould&&left_ad<2)
+//        {
+//            type_of_road=11;
+//            acc_encoder=0;
+//        }
+//        if((int16)(left_ad-right_ad)>right_threshould&&right_ad<2)
+//        {
+//            type_of_road=10;
+//            acc_encoder=0;
+//        }
+//    }
+//
+//    if (type_of_road==11||type_of_road==10)
+//    {
+//
+//        if ((int16)mid_ad>cancel_right_ad&&acc_encoder>_SCFTM)
+//        {
+//            type_of_road=0;
+//        }
+//    }
 }
 /**********************************************************************************************************************
-*  @brief      ³öÈüµÀ±£»¤
+*  @brief      å‡ºèµ›é“ä¿æŠ¤
 *  @since      v1.1
 *
 **********************************************************************************************************************/

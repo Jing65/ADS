@@ -20,8 +20,8 @@
 
 #define AD_NUM 7
 #define AI_NUM 9
-#define SampleTimes 20
-#define SampleTimes_AI 20
+#define SampleTimes 26
+#define SampleTimes_AI 26
 #define SendDataTime   11
 /**********************************************************************************************************************
 *  @brief      获取AD转化值
@@ -50,6 +50,20 @@ extern float Max[(AD_NUM+AI_NUM)];
 extern uint8 If_Start;
 extern uint8 collect_max_flag;
 extern uint8 type_of_road;
+//extern int16 right_threshould;
+//extern int16 cancel_right_ad;
+//extern int16 _SCFTM;
+typedef struct
+{
+     int16 right_threshould;
+     int16 cancel_right_ad;
+     int16 _SCFTM;
+     int16 cross_misjudge;
+     int16 round_midjudge;
+
+} Judgment_threshold;
+
+extern Judgment_threshold long_theshold,short_theshold;
 //控制ad采数数组
 
 

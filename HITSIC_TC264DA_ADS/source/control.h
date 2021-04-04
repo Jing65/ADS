@@ -29,6 +29,7 @@ extern float KD_S_E;//电磁舵机调参
 extern float LIMIT_SE;
 extern uint8 short_control;
 extern int16 sigle_k;
+extern int16 acc_encoder;
 //extern float Moto_Speed_Goal_Set;
 void Servo_Elec(void);
 void Delay_Start(void);

@@ -17,8 +17,8 @@
 #include "long_adc.h"
 
 #define NAME_MAX 20//菜单项名字长度的极限
-#define ITEM_MAX 60//菜单项数目的极限
-#define PARA_MAX 40//参量型菜单项数目的极限
+#define ITEM_MAX 80//菜单项数目的极限
+#define PARA_MAX 60//参量型菜单项数目的极限
 
 extern uint16 ItemNum;
 extern uint16 ParaNum;
@@ -31,11 +31,12 @@ extern uint16 CurMenu;
 enum ITEMID//注意和ID一一对应***顺序不能搞错***
 {
     MENU = 0,
-    MODE = 1, AD_, STEER, MOTOR, UNUSE, HOLD,
+    MODE = 1, AD_, STEER, MOTOR, UNUSE, HOLD,THRESHOLD,
     AD_1, AD_2, AD_3, AD_4, AD_5, AD_6,AD_7, AD_8, AD_9, AD_10, AD_11, AD_12,AD_13, AD_14, AD_15, AD_16,
     Moto_Goal, KP_S, KD_S, LIMIT_S, MID_SERVO, SERVO_1,SERVO_2,
     KP_M, KI_M, MOTOR_1, MOTOR_2, MOTOR_3, MOTOR_4,
     U_1, U_2, U_3, U_4, U_5,
+    thre_1,thre_2,thre_3,thre_4,thre_5,thre_6,thre_7,thre_8,thre_9,thre_10
 };
 
 enum KEY   //按键操作的类型
