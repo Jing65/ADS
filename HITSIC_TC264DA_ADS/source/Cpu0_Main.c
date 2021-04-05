@@ -40,7 +40,7 @@
 #include "SmartCar_Eru.h"
 #include "Init.h"
 #include "long_adc.h"
-
+#include "weights.h"
 
 #pragma section all "cpu0_dsram"
 //IfxCpu_syncEvent g_cpuSyncEvent;
@@ -60,7 +60,7 @@ model_info_struct inf;
 extern void* run_model(const void *model_buf, const void *in_buf, signed short int *out1_buf);
 extern void get_model_info(const void *in_buf, model_info_struct *inf);
 void ai_process(void);
-
+void NNOM_process(void);
 
 int8 ai_data[7];
 uint8 ai_data_flag;
@@ -68,7 +68,7 @@ uint8 ch_AI[AI_NUM]={ADC1_CH9_A25,ADC1_CH4_A20,ADC1_CH0_A16,ADC0_CH8_A8,ADC0_CH6
 uint8 AI_adc[AI_NUM]={ADC_1,ADC_1,ADC_1,ADC_0,ADC_0,ADC_0,ADC_0};
 
 uint8 process_type_ai=0;
-
+nnom_model_t* model;
 
 int core0_main(void)
 {
@@ -122,6 +122,8 @@ int core0_main(void)
     //AI初始化
     get_model_info(model1, &inf);
     //开启总中断
+
+//    model = nnom_model_create();
     IfxCpu_enableInterrupts();
 
 
@@ -133,15 +135,46 @@ int core0_main(void)
         //
         //菜单按键操作检测，
         key_start();
+//        ai_process();
         //AI处理程序
-        if(process_type_ai==1)
+        if(process_type_ai!=0)
         {
             ai_process();
         }
-        else if(process_type_ai!=1)
+        else if(process_type_ai==0)
         {
             Elec_process();
         }
+//        else if(process_type_ai==2)
+//        {
+//            uint16 LV_A[send_AI_num][SampleTimes_AI];
+//            for (uint8 h=0;h<send_AI_num;h++)
+//            {
+//                for(uint8 i=0;i<SampleTimes_AI;i++)
+//                {
+//                 /*获取采样初值*/
+//                    LV_A[h][i] = ADC_Get(AI_adc[h], ch_AI[h], ADC_8BIT);
+//                }
+//            }
+//            float AI[send_AI_num]={0};
+//            float AI_average[send_AI_num]={0};
+//            for(uint8 h=0;h<send_AI_num;h++)
+//            {
+//                for(uint8 i=3;i<SampleTimes_AI-3;i++)
+//                {
+//                    AI[h]+=(float)LV_A[h][i];
+//                }
+//                AI_average[h]=AI[h]/(SampleTimes_AI-6.0);
+//            }
+//            for(uint8 k=0;k<7;k++)
+//            {
+//                ai_data[k]=(int8)((int32)((127*AI_average[k])/Max[k+8]));
+//            }
+//            memcpy(nnom_input_data, ai_data, sizeof(nnom_input_data));
+//            model_run(model);
+//            int8_t servo_p=nnom_output_data[0];
+//            pwm_servo=servo_mid+(servo_p*1.8)/127;
+//        }
 
 //测试程序        num_of_encoder = SmartCar_Encoder_Get(GPT12_T2);
 //          int8 test=-125;
@@ -170,9 +203,10 @@ IFX_INTERRUPT(cc60_pit_ch1_isr, 0, CCU6_0_CH1_ISR_PRIORITY)
 IFX_INTERRUPT(cc61_pit_ch0_isr, 0, CCU6_1_CH0_ISR_PRIORITY)
 {
     enableInterrupts();//开启中断嵌套
-    if(process_type_ai==1)
+//    Servo_Elec_AI();
+    if(process_type_ai!=0)
     Servo_Elec_AI();
-    else if(process_type_ai!=1)
+    else if(process_type_ai==0)
     Servo_Elec();
     PIT_CLEAR_FLAG(CCU6_1, PIT_CH0);
 
@@ -185,7 +219,32 @@ IFX_INTERRUPT(cc61_pit_ch1_isr, 0, CCU6_1_CH1_ISR_PRIORITY)
     PIT_CLEAR_FLAG(CCU6_1, PIT_CH1);
 }
 
-
+//void NNOM_process(void)
+//{
+//    uint16 LV_A[send_AI_num][SampleTimes_AI];
+//    for (uint8 h=0;h<send_AI_num;h++)
+//    {
+//        for(uint8 i=0;i<SampleTimes_AI;i++)
+//        {
+//         /*获取采样初值*/
+//            LV_A[h][i] = ADC_Get(AI_adc[h], ch_AI[h], ADC_8BIT);
+//        }
+//    }
+//    float AI[send_AI_num]={0};
+//    float AI_average[send_AI_num]={0};
+//    for(uint8 h=0;h<send_AI_num;h++)
+//    {
+//        for(uint8 i=3;i<SampleTimes_AI-3;i++)
+//        {
+//            AI[h]+=(float)LV_A[h][i];
+//        }
+//        AI_average[h]=AI[h]/(SampleTimes_AI-6.0);
+//    }
+//    for(uint8 k=0;k<7;k++)
+//    {
+//        ai_data[k]=(int8)((int32)((127*AI_average[k])/Max[k+8]));
+//    }
+//}
 
 void ai_process(void)
 {
@@ -193,7 +252,7 @@ void ai_process(void)
     uint16 LV_A[send_AI_num][SampleTimes_AI];
     for (uint8 h=0;h<send_AI_num;h++)
     {
-        for(uint8 i=0;i<=SampleTimes_AI-1;i++)
+        for(uint8 i=0;i<SampleTimes_AI;i++)
         {
          /*获取采样初值*/
             LV_A[h][i] = ADC_Get(AI_adc[h], ch_AI[h], ADC_8BIT);
@@ -203,25 +262,22 @@ void ai_process(void)
     float AI_average[send_AI_num]={0};
     for(uint8 h=0;h<send_AI_num;h++)
     {
-        for(uint8 i=0;i<=SampleTimes_AI-1;i++)
+        for(uint8 i=3;i<SampleTimes_AI-3;i++)
         {
             AI[h]+=(float)LV_A[h][i];
         }
-        AI_average[h]=AI[h]/SampleTimes_AI;
+        AI_average[h]=AI[h]/(SampleTimes_AI-6.0);
     }
     for(uint8 k=0;k<7;k++)
     {
-        ai_data[k]=(int8)((int16)((127*AI_average[k])/Max[k+8]));
+        ai_data[k]=(int8)((int32)((127*AI_average[k])/Max[k+8]));
     }
-
-
-
     ai_data_flag = 1;
     if(ai_data_flag)
     {
         run_model(model1, ai_data, &temp);
         servo_value = temp >> (inf.quant_bits - inf.frac_bits - 1);
-        pwm_servo=servo_mid+((float)(servo_value)*1.8)/127;
+        pwm_servo=servo_mid+(servo_value*1.8)/127;
         ai_data_flag = 0;
     }
 

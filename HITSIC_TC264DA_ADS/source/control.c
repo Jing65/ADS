@@ -19,6 +19,7 @@ static float pwm_moto = 0;
 static float pwm_moto_add = 0;//电机PID控制增量
 static float Moto_Speed_Goal=0;//用于控制和Wifi上位机中的目标速度
 float Moto_Speed_Goal_Set=2.5;
+float Moto_Speed_Goal_low=0.9;
 static float Moto_Speed_Real;//实际电机速度
 static float Error_Moto_Now;//电机现在error
 static float Error_Moto_Last;//电机前一个error
@@ -40,6 +41,14 @@ void Moto_Speed(void)//电机控制
     else
     {
         Moto_Speed_Goal = Moto_Speed_Goal_Set;
+//        if(AD[]+AD[]<high_thsou)
+//        {
+//            Moto_Speed_Goal = Moto_Speed_Goal_Set;
+//        }
+//        else
+//        {
+//            Moto_Speed_Goal = Moto_Speed_Goal_low;
+//        }
     }
 //    Moto_Speed_Goal = Moto_Speed_Goal_Set;
     //电机PID控制

@@ -89,8 +89,8 @@ void PWM_init(void)
 
 void PIT_init(void)
 {
-    Pit_Init_ms(CCU6_1, PIT_CH0, 20);//电机中断初始化
-    Pit_Init_ms(CCU6_1, PIT_CH1, 5);//舵机中断初始化，中断优先级最低
+    Pit_Init_ms(CCU6_1, PIT_CH0, 5);//电机中断初始化
+    Pit_Init_ms(CCU6_1, PIT_CH1, 20);//舵机中断初始化，中断优先级最低
 //    Pit_Init_ms(CCU6_0, PIT_CH0, 100);//按键检测中断初始化，中断优先级最低
 }
 

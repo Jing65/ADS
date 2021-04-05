@@ -45,6 +45,18 @@
                                     									
                                     <listOptionValue builtIn="false" value="&quot;${ProjDirPath}/Libraries/Infra/Platform/Tricore/Compilers&quot;"/>
                                     									
+                                    <listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/nnom-dev-c99/inc}&quot;"/>
+                                    									
+                                    <listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/nnom-dev-c99/inc/layers}&quot;"/>
+                                    									
+                                    <listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/nnom-dev-c99/port}&quot;"/>
+                                    									
+                                    <listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/nnom-dev-c99/src/backends}&quot;"/>
+                                    									
+                                    <listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/nnom-dev-c99/src/core}&quot;"/>
+                                    									
+                                    <listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/nnom-dev-c99/src/layers}&quot;"/>
+                                    									
                                     <listOptionValue builtIn="false" value="&quot;${ProjDirPath}/Libraries/iLLD/TC26B/Tricore/Multican/Std&quot;"/>
                                     									
                                     <listOptionValue builtIn="false" value="&quot;${ProjDirPath}/Libraries/Infra/Platform&quot;"/>
