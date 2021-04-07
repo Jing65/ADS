@@ -36,7 +36,7 @@ enum ITEMID//注意和ID一一对应***顺序不能搞错***
     Moto_Goal, KP_S, KD_S, LIMIT_S, MID_SERVO, SERVO_1,SERVO_2,
     KP_M, KI_M, MOTOR_1, MOTOR_2, MOTOR_3, MOTOR_4,
     U_1, U_2, U_3, U_4, U_5,
-    thre_1,thre_2,thre_3,thre_4,thre_5,thre_6,thre_7,thre_8,thre_9,thre_10
+    thre_1,thre_2,thre_3,thre_4,thre_5,thre_6,thre_7,thre_8,thre_9,thre_10,thre_11,thre_12,thre_13,thre_14,thre_15
 };
 
 enum KEY   //按键操作的类型

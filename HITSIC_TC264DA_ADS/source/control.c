@@ -18,7 +18,8 @@ static float pwm_moto = 0;
 //static float pwm_moto_goal = 30;//电机速度（用于菜单调节）
 static float pwm_moto_add = 0;//电机PID控制增量
 static float Moto_Speed_Goal=0;//用于控制和Wifi上位机中的目标速度
-float Moto_Speed_Goal_Set=2.5;
+float Moto_Speed_Goal_Set=1.5;
+float lower_speed=1.0;
 float Moto_Speed_Goal_low=0.9;
 static float Moto_Speed_Real;//实际电机速度
 static float Error_Moto_Now;//电机现在error
@@ -38,7 +39,7 @@ void Moto_Speed(void)//电机控制
         Moto_Speed_Goal = 0;
         If_Start = 0;
     }
-    else
+    else if(type_of_road==0&&AD[6]>100&&AD[6]<140)
     {
         Moto_Speed_Goal = Moto_Speed_Goal_Set;
 //        if(AD[]+AD[]<high_thsou)
@@ -49,6 +50,10 @@ void Moto_Speed(void)//电机控制
 //        {
 //            Moto_Speed_Goal = Moto_Speed_Goal_low;
 //        }
+    }
+    else
+    {
+        Moto_Speed_Goal=lower_speed;
     }
 //    Moto_Speed_Goal = Moto_Speed_Goal_Set;
     //电机PID控制
@@ -111,8 +116,48 @@ void Moto_Speed(void)//电机控制
 
 void Servo_Elec_AI(void)
 {
+    if(pwm_servo>servo_mid+LIMIT_SE)
+    {
+        pwm_servo=servo_mid+LIMIT_SE;
+    }
+
+    if(pwm_servo<servo_mid-LIMIT_SE)
+    {
+        pwm_servo=servo_mid-LIMIT_SE;
+    }
     SmartCar_Gtm_Pwm_Setduty(&Servo_PIN, (uint32)(pwm_servo*100));
 }
+void Short_Servo_Elec(void)
+{
+//    if(type_of_road==0)//直道和45度弯
+//    {
+//        pwm_servo_variation = KP_S_S * err_synthetical_now  + KD_S_S*(err_synthetical_now - err_synthetical_last );
+//        if(pwm_servo_variation > LIMIT_SE)
+//        {
+//            pwm_servo_variation = LIMIT_SE;
+//        }
+//        else if(pwm_servo_variation < -LIMIT_SE)
+//        {
+//            pwm_servo_variation = -LIMIT_SE;
+//        }
+//        err_synthetical_last = err_synthetical_now;
+//        pwm_servo = pwm_servo_variation+servo_mid;
+//    }
+//    if(type_of_road==30)
+//    {
+//        if(into_the_ring==0)
+//        pwm_servo =servo_mid;
+//        else if(into_the_ring!=0&&left_round!=0&&right_round==0)
+//        pwm_servo =servo_mid-round_servo;
+//        else if(into_the_ring!=0&&left_round==0&&right_round!=0)
+//        pwm_servo =servo_mid+round_servo;
+//
+//    }
+
+
+
+}
+
 void Servo_Elec(void)//电磁舵机控制
 {
     if(type_of_road==0)//直道和45度弯

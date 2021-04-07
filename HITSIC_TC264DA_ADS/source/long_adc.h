@@ -42,6 +42,7 @@ void recognize_road(void);
 void Get_AI_AD (void);
 void Short_process(void);
 void Long_process(void);
+void send_ad(void);
 //void Save_ADMAX(void);
 //void Read_AD(void);
 extern float err_synthetical_now;
@@ -60,6 +61,9 @@ typedef struct
      int16 _SCFTM;
      int16 cross_misjudge;
      int16 round_midjudge;
+     int16 round_misjudge_num;
+     int16 round_misjudge_single;
+     int16 round_SCFTM;
 
 } Judgment_threshold;
 

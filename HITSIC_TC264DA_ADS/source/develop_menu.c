@@ -214,7 +214,7 @@ void CreatMenu(void)//**创建并插入一个新项需要增加一个新ITEMID枚举项***
     InsertItem(Item, STEER, SERVO_2);
     Item[KP_M] = CreatItem(paraF_item, "KP_M", 0, 1000);
     Item[KI_M] = CreatItem(paraF_item, "KI_M", 0, 1000);
-    Item[MOTOR_1] = CreatItem(paraI_item, "XXXX", -10000, 10000);
+    Item[MOTOR_1] = CreatItem(paraF_item, "low_speed", 0,3);
     Item[MOTOR_2] = CreatItem(paraF_item, "XXXX", 0, 50);
     Item[MOTOR_3] = CreatItem(stateI_item, "RXXX", -30000, 30000);
     Item[MOTOR_4] = CreatItem(stateF_item, "RXXX", -500, 500);
@@ -227,7 +227,7 @@ void CreatMenu(void)//**创建并插入一个新项需要增加一个新ITEMID枚举项***
     Item[U_1] = CreatItem(paraI_item, "collect_m", 0, 1);
     Item[U_2] = CreatItem(paraI_item, "process_ai", 0, 1);
     Item[U_3] = CreatItem(paraI_item, "short_con", 0, 1);
-    Item[U_4] = CreatItem(paraF_item, "XXXX", -20, 20);
+    Item[U_4] = CreatItem(paraI_item, "nnom_pro", 0, 1);
     Item[U_5] = CreatItem(stateF_item, "RXXX", -500, 500);
     InsertItem(Item, UNUSE, U_1);
     InsertItem(Item, UNUSE, U_2);
@@ -239,11 +239,24 @@ void CreatMenu(void)//**创建并插入一个新项需要增加一个新ITEMID枚举项***
     Item[thre_3] = CreatItem(paraI_item, "R_ecoder", 0, 30000);
     Item[thre_4] = CreatItem(paraI_item, "cr_mis", 0, 300);
     Item[thre_5] = CreatItem(paraI_item, "round_m", 0, 300);
+    Item[thre_6] = CreatItem(paraI_item, "S_right", 0, 300);
+    Item[thre_7] = CreatItem(paraI_item, "S_cross", 0, 300);
+    Item[thre_8] = CreatItem(paraI_item, "S_Ronum", 0, 300);
+    Item[thre_9] = CreatItem(paraI_item, "S_Rsigle", 0, 300);
+    Item[thre_10] = CreatItem(paraI_item, "SRcancel", 0, 300);
+    Item[thre_11] = CreatItem(paraI_item, "S_ecoder", 0, 30000);
     InsertItem(Item,THRESHOLD,thre_1);
     InsertItem(Item,THRESHOLD,thre_2);
     InsertItem(Item,THRESHOLD,thre_3);
     InsertItem(Item,THRESHOLD,thre_4);
     InsertItem(Item,THRESHOLD,thre_5);
+    InsertItem(Item,THRESHOLD,thre_6);
+    InsertItem(Item,THRESHOLD,thre_7);
+    InsertItem(Item,THRESHOLD,thre_8);
+    InsertItem(Item,THRESHOLD,thre_9);
+    InsertItem(Item,THRESHOLD,thre_10);
+    InsertItem(Item,THRESHOLD,thre_11);
+
 }
 
 void MenuInit(void)
@@ -254,16 +267,24 @@ void MenuInit(void)
     Item[KD_S].item_data.floatData=KD_S_E;
     Item[KP_M].item_data.floatData=KP_m;
     Item[KI_M].item_data.floatData=KI_m;
+    Item[MOTOR_1].item_data.floatData=lower_speed;
     Item[LIMIT_S].item_data.floatData=LIMIT_SE;
     Item[SERVO_1].item_data.intData=acc_encoder;
     Item[U_1].item_data.intData=collect_max_flag;
     Item[U_2].item_data.intData=process_type_ai;
     Item[U_3].item_data.intData=short_control;
+    Item[U_4].item_data.intData=nnom_pro;
     Item[thre_1].item_data.intData=long_theshold.right_threshould;
     Item[thre_2].item_data.intData=long_theshold.cancel_right_ad;
     Item[thre_3].item_data.intData=long_theshold._SCFTM;
     Item[thre_4].item_data.intData=long_theshold.cross_misjudge;
     Item[thre_5].item_data.intData=long_theshold.round_midjudge;
+    Item[thre_6].item_data.intData=short_theshold.right_threshould;
+    Item[thre_7].item_data.intData=short_theshold.cross_misjudge;
+    Item[thre_8].item_data.intData=short_theshold.round_misjudge_num;
+    Item[thre_9].item_data.intData=short_theshold.round_misjudge_single;
+    Item[thre_10].item_data.intData=short_theshold.cancel_right_ad;
+    Item[thre_11].item_data.intData=short_theshold._SCFTM;
 }
 
 void Read_flash(void)
@@ -283,6 +304,14 @@ void Read_flash(void)
     long_theshold._SCFTM=Page_Read(0,12,int16);
     long_theshold.cross_misjudge=Page_Read(0,13,int16);
     long_theshold.round_midjudge=Page_Read(0,14,int16);
+    nnom_pro=Page_Read(0,15,uint8);
+    short_theshold.right_threshould=Page_Read(0,16,int16);
+    short_theshold.cross_misjudge=Page_Read(0,17,int16);
+    short_theshold.round_misjudge_num=Page_Read(0,18,int16);
+    short_theshold.round_misjudge_single=Page_Read(0,19,int16);
+    short_theshold.cancel_right_ad=Page_Read(0,20,int16);
+    short_theshold._SCFTM=Page_Read(0,21,int16);
+//暂时去掉    lower_speed=Page_Read(0,22,float);
 }
 
 void DataUpdate(void)
@@ -302,11 +331,19 @@ void DataUpdate(void)
      collect_max_flag = (uint8)Item[U_1].item_data.intData;
      process_type_ai  = (uint8)Item[U_2].item_data.intData;
      short_control  = (uint8)Item[U_3].item_data.intData;
+     nnom_pro = (uint8)Item[U_4].item_data.intData;
      long_theshold.right_threshould=Item[thre_1].item_data.intData;
      long_theshold.cancel_right_ad=Item[thre_2].item_data.intData;
      long_theshold._SCFTM=Item[thre_3].item_data.intData;
      long_theshold.cross_misjudge=Item[thre_4].item_data.intData;
      long_theshold.round_midjudge=Item[thre_5].item_data.intData;
+     short_theshold.right_threshould=Item[thre_6].item_data.intData;
+     short_theshold.cross_misjudge=Item[thre_7].item_data.intData;
+     short_theshold.round_misjudge_num=Item[thre_8].item_data.intData;
+     short_theshold.round_misjudge_single=Item[thre_9].item_data.intData;
+     short_theshold.cancel_right_ad=Item[thre_10].item_data.intData;
+     short_theshold._SCFTM=Item[thre_11].item_data.intData;
+     lower_speed=Item[MOTOR_1].item_data.floatData;
 }
 
 void Save_data(void)
@@ -326,6 +363,14 @@ void Save_data(void)
     CAR_BUFFER[13]=long_theshold._SCFTM;
     CAR_BUFFER[14]=long_theshold.cross_misjudge;
     CAR_BUFFER[15]=long_theshold.round_midjudge;
+    CAR_BUFFER[16]=nnom_pro;
+    CAR_BUFFER[17]=short_theshold.right_threshould;
+    CAR_BUFFER[18]=short_theshold.cross_misjudge;
+    CAR_BUFFER[19]=short_theshold.round_misjudge_num;
+    CAR_BUFFER[20]=short_theshold.round_misjudge_single;
+    CAR_BUFFER[21]=short_theshold.cancel_right_ad;
+    CAR_BUFFER[22]=short_theshold._SCFTM;
+    CAR_BUFFER[22]=float_conversion_uint32(lower_speed);
     Sector_Erase(0);
     for(uint8 i=0;i<PARA_MAX-1;i++)
     {

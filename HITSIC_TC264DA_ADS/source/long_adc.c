@@ -75,10 +75,13 @@ static float Average_AI[AI_NUM];
 
 //上位机传回的数组
 uint8 type_of_road = 0;
+uint8 send_ai_ad = 1;
+static uint8 round_flag=0;
 
 _Bool send_data_flag=0;//1：ad数据采集完成   0：ad数据未采集完成
 uint8 collect_max_flag = 0;
 uint8 send_buff[SendDataTime];//WIFI传adc数据
+
 float Max[(AD_NUM+AI_NUM)];
 //static uint32 Save_max[(AD_NUM+AI_NUM)];
 //int16 right_threshould=15;
@@ -200,7 +203,7 @@ void Get_AI_AD (void)
 
        if (collect_max_flag!=1)
        {
-           if(!send_data_flag)
+           if(send_data_flag==0)
            {
                if(short_control==0)
                {
@@ -208,6 +211,8 @@ void Get_AI_AD (void)
                    {
                        //暂时去掉归一化 AD[i] = (100*LV[i])/Max[i];//(K = 100)
                        AD[i] = (100*Average[i])/Max[i];
+                       if(AD[i]>255)
+                           AD[i]=255;
                        //AD[i] = transfer[i];
 
                    }
@@ -222,6 +227,13 @@ void Get_AI_AD (void)
                        AD[13] = (127*Average_AI[6])/Max[13];
                        AD[14] = (127*Average_AI[7])/Max[14];
                        AD[15] = (127*Average_AI[8])/Max[15];
+                       for(uint8 i=AD_NUM;i<(AD_NUM+AI_NUM);i++)
+                       {
+                           if(AD[i]>255)
+                           {
+                               AD[i]=255;
+                           }
+                       }
                        //AD[i+AD_NUM] = transfer_AI[i];
 
                send_data_flag=1;
@@ -298,8 +310,6 @@ void recognize_road(void)
     }
 
 
-
-
    //正常寻迹偏离赛道的情况
 //   if (type_of_road==0)
 //   {
@@ -363,14 +373,14 @@ void Long_process(void)
             acc_encoder=0;
         }
     }
- //   if(type_of_road!=20)
- //   {
- //       if (AD[6]>=200&&AD[0]-AD[1]<-10)
- //       {
- //           type_of_road=21;
- //       }
- //   }
-    //清除直角弯标志位
+//    if(type_of_road!=20)
+//    {
+//        if (AD[6]>=200&&AD[0]-AD[1]<-10)
+//        {
+//            type_of_road=21;
+//        }
+//    }
+//    清除直角弯标志位
     if (type_of_road==11||type_of_road==10)
     {
         if (Mid_ad>long_theshold.cancel_right_ad&&acc_encoder>long_theshold._SCFTM)
@@ -380,7 +390,6 @@ void Long_process(void)
     }
     if (type_of_road==20||type_of_road==21)
     {
-
         if (AD[6]<=130&&AD[1]+AD[0]<100&&acc_encoder>long_theshold._SCFTM)
         {
             type_of_road=0;
@@ -395,34 +404,101 @@ void Long_process(void)
 *                 10/11  90度转角左、右打死
 *                 20/21  20左环、21右环
 **********************************************************************************************************************/
+//#define  buffer_num    30
+//static float AD_SLV_LAST[buffer_num]={0};
+//static float AD_SLH_LAST[buffer_num]={0};
+//static float AD_SRH_LAST[buffer_num]={0};
 void Short_process(void)
 {
-//    float right_ad,left_ad,mid_ad;
-//    right_ad=AD[13];
-//    left_ad=AD[9];
-//    mid_ad=AD[11];
-//    if(type_of_road!=10&&type_of_road!=11)
-//    {
-//        if((int16)(right_ad-left_ad)>right_threshould&&left_ad<2)
-//        {
-//            type_of_road=11;
-//            acc_encoder=0;
-//        }
-//        if((int16)(left_ad-right_ad)>right_threshould&&right_ad<2)
-//        {
-//            type_of_road=10;
-//            acc_encoder=0;
-//        }
-//    }
+
+    float SL_vertical,SR_vertical,SL_horizontal,SR_horizontal,SMid_ad;
+    SL_vertical=AD[9];
+    SR_vertical=AD[13];
+    SMid_ad=AD[11];
+    SL_horizontal=AD[8];
+    SR_horizontal=AD[14];
+////    for(uint8 i=0;i<buffer_num;i++)
+////    {
+////        AD_SLV_LAST[i]=AD_SLV_LAST[i+1];
+////    }
+////    AD_SLV_LAST[buffer_num-1]=SL_vertical;
+////    uint8 lh_grow_high=0,grow_low=0;
+////    for(uint8 h=1;h<15;h++)
+////    {
+////        if (AD_SLV_LAST[h+15]-AD_SLV_LAST[h]>1)//0.5是否合理需要改
+////        {
+////            lh_grow_high++;
+////        }
+//////        else if(AD_SLV_LAST[h+15]-AD_SLV_LAST[h-15]<-1)
+//////        {
+//////            grow_low++;
+//////        }
+////    }
 //
-//    if (type_of_road==11||type_of_road==10)
+//    for(uint8 i=0;i<buffer_num;i++)
 //    {
-//
-//        if ((int16)mid_ad>cancel_right_ad&&acc_encoder>_SCFTM)
-//        {
-//            type_of_road=0;
-//        }
+//        AD_SLH_LAST[i]=AD_SLH_LAST[i+1];
 //    }
+//    AD_SLH_LAST[buffer_num-1]=SL_horizontal;
+//    uint8 sl_growlow=0,grow_low=0;
+//    for(uint8 h=1;h<15;h++)
+//    {
+//        if (AD_SLH_LAST[h+15]-AD_SLH_LAST[h]<-0.2)//0.5是否合理需要改
+//        {
+//            sl_growlow++;
+//        }
+////        else if(AD_SLV_LAST[h+15]-AD_SLV_LAST[h-15]<-1)
+////        {
+////            grow_low++;
+////        }
+//    }
+    if(SMid_ad>short_theshold.round_midjudge)
+    {
+      type_of_road=30;
+      round_flag=1;
+      acc_encoder=0;
+    }
+
+    if(type_of_road!=30)
+    {
+        if(SL_vertical-SR_vertical>short_theshold.right_threshould&&SR_vertical<short_theshold.cross_misjudge&&SL_horizontal+SR_horizontal<short_theshold.round_misjudge_num&&SL_horizontal<short_theshold.round_misjudge_single)
+        {
+//            if(sl_growlow>13)
+//            {
+//                type_of_road=10;
+//            }
+            type_of_road=10;
+            acc_encoder=0;
+        }
+
+        if(SR_vertical-SL_vertical>short_theshold.right_threshould&&SL_vertical<short_theshold.cross_misjudge&&SL_horizontal+SR_horizontal<short_theshold.round_misjudge_num&&SR_horizontal<short_theshold.round_misjudge_single)
+        {
+            type_of_road=11;
+            acc_encoder=0;
+        }
+    }
+    if(type_of_road==30)
+    {
+        if(acc_encoder>short_theshold.round_SCFTM)
+        {
+
+        }
+    }
+
+    if (type_of_road==11||type_of_road==10)
+    {
+        if (AD[11]>short_theshold.cancel_right_ad&&acc_encoder>short_theshold._SCFTM)
+        {
+            type_of_road=0;
+        }
+    }
+
+
+
+
+
+
+
 }
 /**********************************************************************************************************************
 *  @brief      出赛道保护
@@ -473,14 +549,45 @@ void Send_Data(void)
 }
 
 
+void send_ad(void)
+{
+
+//    for(uint8 i=0;i<7;i++)
+//     {
+//         sen_ad_1[i]=AD[i+8];
+//     }
+//   SmartCar_VarUpload(sen_ad_1,7);
+//   send_data_flag=0;
+    if(send_data_flag)
+    {
+//        float sen_ad_1[7]={0};
+//        for(uint8 i=0;i<7;i++)
+//         {
+//             sen_ad_1[i]=AD[i+8];
+//         }
+//       SmartCar_VarUpload(sen_ad_1,7);
+       send_data_flag=0;
+    }
+
+}
 void Elec_process(void)
 {
     LV_Sample();
     Get_AI_AD();
     recognize_road();
     get_err();
-//    out_of_road();
-    Send_Data();
+    out_of_road();
+//    if(send_ai_ad==1)
+//    {
+//        Send_Data();
+//    }
+//
+//    if(short_control==1)
+//    {
+//    send_ad();
+        Send_Data();
+//    }
+
 }
 
 

@@ -19,11 +19,13 @@
 #include "long_adc.h"
 //处理程序flag
 extern uint8 process_type_ai;
+extern uint8 nnom_pro;
 extern float KP_m;
 extern float KI_m;
 extern float pwm_servo;
 extern float servo_mid;
 extern float Moto_Speed_Goal_Set;
+extern float lower_speed;
 extern float KP_S_E;//电磁舵机调参
 extern float KD_S_E;//电磁舵机调参
 extern float LIMIT_SE;
@@ -32,6 +34,7 @@ extern int16 sigle_k;
 extern int16 acc_encoder;
 //extern float Moto_Speed_Goal_Set;
 void Servo_Elec(void);
+void Short_Servo_Elec(void);
 void Delay_Start(void);
 void Moto_Speed(void);//含pid控制的电机pwm输出
 //void modechange(void);//oled图像与菜单转换

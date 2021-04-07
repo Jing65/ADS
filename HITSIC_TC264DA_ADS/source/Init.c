@@ -83,14 +83,14 @@ void elec_init(void)//ADC初始化
 void PWM_init(void)
 {
     SmartCar_Gtm_Pwm_Init(&Servo_PIN, 50, (uint32)(servo_mid*100));
-    SmartCar_Gtm_Pwm_Init(&Motor_PIN_1, 20000, 0);
-    SmartCar_Gtm_Pwm_Init(&Motor_PIN_0, 20000, 0);
+    SmartCar_Gtm_Pwm_Init(&Motor_PIN_1, 16000, 0);
+    SmartCar_Gtm_Pwm_Init(&Motor_PIN_0, 16000, 0);
 }
 
 void PIT_init(void)
 {
-    Pit_Init_ms(CCU6_1, PIT_CH0, 5);//电机中断初始化
-    Pit_Init_ms(CCU6_1, PIT_CH1, 20);//舵机中断初始化，中断优先级最低
+    Pit_Init_ms(CCU6_1, PIT_CH0, 20);//舵机中断初始化
+    Pit_Init_ms(CCU6_1, PIT_CH1, 5);//电机中断初始化
 //    Pit_Init_ms(CCU6_0, PIT_CH0, 100);//按键检测中断初始化，中断优先级最低
 }
 
