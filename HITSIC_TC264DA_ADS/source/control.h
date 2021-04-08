@@ -24,10 +24,13 @@ extern float KP_m;
 extern float KI_m;
 extern float pwm_servo;
 extern float servo_mid;
+extern float round_servo;
 extern float Moto_Speed_Goal_Set;
 extern float lower_speed;
 extern float KP_S_E;//电磁舵机调参
 extern float KD_S_E;//电磁舵机调参
+extern float KP_S_S;//电磁舵机调参
+extern float KD_S_S;//电磁舵机调参
 extern float LIMIT_SE;
 extern uint8 short_control;
 extern int16 sigle_k;

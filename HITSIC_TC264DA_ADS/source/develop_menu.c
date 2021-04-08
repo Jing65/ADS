@@ -245,6 +245,14 @@ void CreatMenu(void)//**创建并插入一个新项需要增加一个新ITEMID枚举项***
     Item[thre_9] = CreatItem(paraI_item, "S_Rsigle", 0, 300);
     Item[thre_10] = CreatItem(paraI_item, "SRcancel", 0, 300);
     Item[thre_11] = CreatItem(paraI_item, "S_ecoder", 0, 30000);
+    Item[thre_12] = CreatItem(paraI_item, "S_midr", 0, 300);
+    Item[thre_13] = CreatItem(paraI_item, "S_intor", 0, 300);
+    Item[thre_14] = CreatItem(paraI_item, "S_Reco", 0, 31000);
+    Item[thre_15] = CreatItem(paraI_item, "cancel_i", 0, 300);
+    Item[thre_16] = CreatItem(paraF_item, "servo_r", 0, 1.8);
+    Item[thre_17] = CreatItem(paraF_item, "KP_S_S", 0, 100);
+    Item[thre_18] = CreatItem(paraF_item, "KD_S_S", 0, 100);
+    Item[thre_19] = CreatItem(paraI_item, "out_roun", 0, 100);
     InsertItem(Item,THRESHOLD,thre_1);
     InsertItem(Item,THRESHOLD,thre_2);
     InsertItem(Item,THRESHOLD,thre_3);
@@ -256,7 +264,14 @@ void CreatMenu(void)//**创建并插入一个新项需要增加一个新ITEMID枚举项***
     InsertItem(Item,THRESHOLD,thre_9);
     InsertItem(Item,THRESHOLD,thre_10);
     InsertItem(Item,THRESHOLD,thre_11);
-
+    InsertItem(Item,THRESHOLD,thre_12);
+    InsertItem(Item,THRESHOLD,thre_13);
+    InsertItem(Item,THRESHOLD,thre_14);
+    InsertItem(Item,THRESHOLD,thre_15);
+    InsertItem(Item,THRESHOLD,thre_16);
+    InsertItem(Item,THRESHOLD,thre_17);
+    InsertItem(Item,THRESHOLD,thre_18);
+    InsertItem(Item,THRESHOLD,thre_19);
 }
 
 void MenuInit(void)
@@ -285,6 +300,14 @@ void MenuInit(void)
     Item[thre_9].item_data.intData=short_theshold.round_misjudge_single;
     Item[thre_10].item_data.intData=short_theshold.cancel_right_ad;
     Item[thre_11].item_data.intData=short_theshold._SCFTM;
+    Item[thre_12].item_data.intData=short_theshold.round_midjudge;
+    Item[thre_13].item_data.intData=short_theshold.into_round;
+    Item[thre_14].item_data.intData=short_theshold.round_SCFTM;
+    Item[thre_15].item_data.intData=short_theshold.cancel_ir;
+    Item[thre_16].item_data.floatData =round_servo;
+    Item[thre_17].item_data.floatData =KP_S_S;
+    Item[thre_18].item_data.floatData =KD_S_S;
+    Item[thre_19].item_data.intData =short_theshold.out_flagjudge;
 }
 
 void Read_flash(void)
@@ -311,6 +334,14 @@ void Read_flash(void)
     short_theshold.round_misjudge_single=Page_Read(0,19,int16);
     short_theshold.cancel_right_ad=Page_Read(0,20,int16);
     short_theshold._SCFTM=Page_Read(0,21,int16);
+    short_theshold.round_midjudge=Page_Read(0,23,int16);
+    short_theshold.into_round=Page_Read(0,24,int16);
+    short_theshold.round_SCFTM=Page_Read(0,25,int16);
+    short_theshold.cancel_ir=Page_Read(0,26,int16);
+    round_servo=Page_Read(0,27,float);
+    KP_S_S=Page_Read(0,28,float);
+    KD_S_S=Page_Read(0,29,float);
+    short_theshold.out_flagjudge=Page_Read(0,30,int16);
 //暂时去掉    lower_speed=Page_Read(0,22,float);
 }
 
@@ -344,6 +375,14 @@ void DataUpdate(void)
      short_theshold.cancel_right_ad=Item[thre_10].item_data.intData;
      short_theshold._SCFTM=Item[thre_11].item_data.intData;
      lower_speed=Item[MOTOR_1].item_data.floatData;
+     short_theshold.round_midjudge=Item[thre_12].item_data.intData;
+     short_theshold.into_round=Item[thre_13].item_data.intData;
+     short_theshold.round_SCFTM=Item[thre_14].item_data.intData;
+     short_theshold.cancel_ir=Item[thre_15].item_data.intData;
+     round_servo=Item[thre_16].item_data.floatData;
+     KP_S_S=Item[thre_17].item_data.floatData;
+     KD_S_S=Item[thre_18].item_data.floatData;
+     short_theshold.out_flagjudge=Item[thre_19].item_data.intData;
 }
 
 void Save_data(void)
@@ -370,7 +409,15 @@ void Save_data(void)
     CAR_BUFFER[20]=short_theshold.round_misjudge_single;
     CAR_BUFFER[21]=short_theshold.cancel_right_ad;
     CAR_BUFFER[22]=short_theshold._SCFTM;
-    CAR_BUFFER[22]=float_conversion_uint32(lower_speed);
+    CAR_BUFFER[23]=float_conversion_uint32(lower_speed);
+    CAR_BUFFER[24]=short_theshold.round_midjudge;
+    CAR_BUFFER[25]=short_theshold.into_round;
+    CAR_BUFFER[26]=short_theshold.round_SCFTM;
+    CAR_BUFFER[27]=short_theshold.cancel_ir;
+    CAR_BUFFER[28]=float_conversion_uint32(round_servo);
+    CAR_BUFFER[29]=float_conversion_uint32(KP_S_S);
+    CAR_BUFFER[30]=float_conversion_uint32(KD_S_S);
+    CAR_BUFFER[31]=short_theshold.out_flagjudge;
     Sector_Erase(0);
     for(uint8 i=0;i<PARA_MAX-1;i++)
     {

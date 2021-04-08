@@ -76,7 +76,14 @@ static float Average_AI[AI_NUM];
 //上位机传回的数组
 uint8 type_of_road = 0;
 uint8 send_ai_ad = 1;
-static uint8 round_flag=0;
+uint8 into_the_ring=0;
+uint8 right_round=0;
+uint8 left_round=0;
+uint8 out_the_ring=0;
+uint8 in_the_round=0;
+
+
+//static uint8 round_flag=0;
 
 _Bool send_data_flag=0;//1：ad数据采集完成   0：ad数据未采集完成
 uint8 collect_max_flag = 0;
@@ -452,14 +459,78 @@ void Short_process(void)
 ////            grow_low++;
 ////        }
 //    }
-    if(SMid_ad>short_theshold.round_midjudge)
+
+    //into_the_ring==0是为了
+//    if(into_the_ring==0&&in_the_round==0&&SMid_ad>short_theshold.round_midjudge)
+    if(in_the_round==0&&SMid_ad>short_theshold.round_midjudge)
     {
-      type_of_road=30;
-      round_flag=1;
-      acc_encoder=0;
+
+          type_of_road=30;
+    //      round_flag=1;
+          acc_encoder=0;
+
+    }
+    if(type_of_road==30)
+    {
+        if(SMid_ad>short_theshold.into_round)
+        {
+            into_the_ring=1;
+            if(right_round==0&&left_round==0)
+            {
+                if(SL_horizontal>SR_horizontal)
+                {
+                    left_round=1;
+                    right_round=0;
+                }
+                if(SL_horizontal<SR_horizontal)
+                {
+                    right_round=1;
+                    left_round=0;
+                }
+            }
+
+        }
+
+    }
+    if(type_of_road==30&&into_the_ring==1)
+    {
+        if(acc_encoder>short_theshold.round_SCFTM&&SMid_ad<short_theshold.cancel_ir)
+        {
+            type_of_road=0;
+            into_the_ring=0;
+//            right_round=0;
+//            left_round=0;
+            in_the_round=1;
+        }
+    }
+    if(in_the_round==1&&SMid_ad>short_theshold.round_midjudge)
+    {
+
+          type_of_road=31;
+          acc_encoder=0;
+
+    }
+    if(type_of_road==31&&SMid_ad>short_theshold.out_flagjudge)
+    {
+            out_the_ring=1;
     }
 
-    if(type_of_road!=30)
+    if(out_the_ring==1&&type_of_road==31)
+    {
+        if(acc_encoder>short_theshold.round_SCFTM&&SMid_ad<short_theshold.cancel_ir)
+        {
+            type_of_road=0;
+            in_the_round=0;
+            right_round=0;
+            left_round=0;
+            out_the_ring=0;
+        }
+
+    }
+
+
+
+    if(type_of_road!=30&&type_of_road!=31)
     {
         if(SL_vertical-SR_vertical>short_theshold.right_threshould&&SR_vertical<short_theshold.cross_misjudge&&SL_horizontal+SR_horizontal<short_theshold.round_misjudge_num&&SL_horizontal<short_theshold.round_misjudge_single)
         {
@@ -477,13 +548,7 @@ void Short_process(void)
             acc_encoder=0;
         }
     }
-    if(type_of_road==30)
-    {
-        if(acc_encoder>short_theshold.round_SCFTM)
-        {
 
-        }
-    }
 
     if (type_of_road==11||type_of_road==10)
     {
@@ -576,7 +641,7 @@ void Elec_process(void)
     Get_AI_AD();
     recognize_road();
     get_err();
-    out_of_road();
+//    out_of_road();
 //    if(send_ai_ad==1)
 //    {
 //        Send_Data();
@@ -584,8 +649,8 @@ void Elec_process(void)
 //
 //    if(short_control==1)
 //    {
-//    send_ad();
-        Send_Data();
+    send_ad();
+//        Send_Data();
 //    }
 
 }

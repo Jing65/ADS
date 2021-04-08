@@ -5,12 +5,15 @@
  *      Author: HP
  */
 #include "control.h"
-float pwm_servo=7.35;
+float pwm_servo=7.15;
 float servo_mid = 7.15;
+float round_servo = 0.7;
 float KP_m = 32;
 float KI_m = 17;
 float KP_S_E = 15.5;//电磁舵机调参
 float KD_S_E = 8.2;//电磁舵机调参
+float KP_S_S = 15.5;//电磁舵机调参
+float KD_S_S = 8.2;//电磁舵机调参
 //static float Stop_Min = 2;//出赛到保护的电磁的最小值
 static float pwm_servo_variation=0;
 static float err_synthetical_last = 0;
@@ -55,6 +58,8 @@ void Moto_Speed(void)//电机控制
     {
         Moto_Speed_Goal=lower_speed;
     }
+
+
 //    Moto_Speed_Goal = Moto_Speed_Goal_Set;
     //电机PID控制
     int16 ecoder_num=-SmartCar_Encoder_Get(GPT12_T2);
@@ -79,13 +84,13 @@ void Moto_Speed(void)//电机控制
     //电机输出
     if (pwm_moto>0)
     {
-        SmartCar_Gtm_Pwm_Setduty(&Motor_PIN_0,0);
-        SmartCar_Gtm_Pwm_Setduty(&Motor_PIN_1,(uint32)(pwm_moto*100));
+        SmartCar_Gtm_Pwm_Setduty(&Motor_PIN_1,0);
+        SmartCar_Gtm_Pwm_Setduty(&Motor_PIN_0,(uint32)(pwm_moto*100));
     }
     else if(pwm_moto<0)
     {
-        SmartCar_Gtm_Pwm_Setduty(&Motor_PIN_0,(uint32)(-pwm_moto*100));
-        SmartCar_Gtm_Pwm_Setduty(&Motor_PIN_1,0);
+        SmartCar_Gtm_Pwm_Setduty(&Motor_PIN_1,(uint32)(-pwm_moto*100));
+        SmartCar_Gtm_Pwm_Setduty(&Motor_PIN_0,0);
     }
     acc_encoder += ecoder_num;
     if(acc_encoder>32600)
@@ -129,33 +134,63 @@ void Servo_Elec_AI(void)
 }
 void Short_Servo_Elec(void)
 {
-//    if(type_of_road==0)//直道和45度弯
-//    {
-//        pwm_servo_variation = KP_S_S * err_synthetical_now  + KD_S_S*(err_synthetical_now - err_synthetical_last );
-//        if(pwm_servo_variation > LIMIT_SE)
-//        {
-//            pwm_servo_variation = LIMIT_SE;
-//        }
-//        else if(pwm_servo_variation < -LIMIT_SE)
-//        {
-//            pwm_servo_variation = -LIMIT_SE;
-//        }
-//        err_synthetical_last = err_synthetical_now;
-//        pwm_servo = pwm_servo_variation+servo_mid;
-//    }
-//    if(type_of_road==30)
-//    {
-//        if(into_the_ring==0)
-//        pwm_servo =servo_mid;
-//        else if(into_the_ring!=0&&left_round!=0&&right_round==0)
-//        pwm_servo =servo_mid-round_servo;
-//        else if(into_the_ring!=0&&left_round==0&&right_round!=0)
-//        pwm_servo =servo_mid+round_servo;
-//
-//    }
+    if(type_of_road==0)//直道和45度弯
+    {
+        pwm_servo_variation = KP_S_S * err_synthetical_now  + KD_S_S*(err_synthetical_now - err_synthetical_last );
+        if(pwm_servo_variation > LIMIT_SE)
+        {
+            pwm_servo_variation = LIMIT_SE;
+        }
+        else if(pwm_servo_variation < -LIMIT_SE)
+        {
+            pwm_servo_variation = -LIMIT_SE;
+        }
+        err_synthetical_last = err_synthetical_now;
+        pwm_servo = pwm_servo_variation+servo_mid;
+    }
+    if(type_of_road==30)
+    {
+        if(into_the_ring==0)
+        {
+            pwm_servo =servo_mid;
+        }
+        if(into_the_ring!=0&&left_round!=0&&right_round==0)
+        {
+            pwm_servo =servo_mid-round_servo;
+        }
+        if(into_the_ring!=0&&left_round==0&&right_round!=0)
+        {
+            pwm_servo =servo_mid+round_servo;
+        }
 
+    }
+    if(type_of_road==31)
+    {
+        if(out_the_ring==0)
+        {
+            pwm_servo =servo_mid;
+        }
 
+        if(out_the_ring!=0&&left_round!=0&&right_round==0)
+        {
+            pwm_servo =servo_mid-round_servo;
+        }
 
+        if(out_the_ring!=0&&left_round==0&&right_round!=0)
+        {
+            pwm_servo =servo_mid+round_servo;
+        }
+
+    }
+    if (type_of_road==11)//1为直角弯道1为右拐
+        {
+            pwm_servo =servo_mid+LIMIT_SE;
+        }
+    if (type_of_road==10)//1为直角弯道0为左拐
+        {
+             pwm_servo =servo_mid-LIMIT_SE;
+        }
+    SmartCar_Gtm_Pwm_Setduty(&Servo_PIN, (uint32)(pwm_servo*100));
 }
 
 void Servo_Elec(void)//电磁舵机控制

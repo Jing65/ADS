@@ -8,8 +8,8 @@
 #ifndef SOURCE_PORT_DEF_H_
 #define SOURCE_PORT_DEF_H_
 
-#define Motor_PIN_0    IfxGtm_ATOM1_4_TOUT4_P02_4_OUT       //定义电机引脚
-#define Motor_PIN_1    IfxGtm_ATOM0_5_TOUT5_P02_5_OUT         //定义电机引脚
+#define Motor_PIN_0    IfxGtm_ATOM2_0_TOUT26_P33_4_OUT //IfxGtm_ATOM1_4_TOUT4_P02_4_OUTIfxGtm_ATOM2_0_TOUT26_P33_4_OUT      //定义电机引脚
+#define Motor_PIN_1    IfxGtm_ATOM2_1_TOUT27_P33_5_OUT //IfxGtm_ATOM0_5_TOUT5_P02_5_OUTIfxGtm_ATOM2_1_TOUT27_P33_5_OUT         //定义电机引脚
 #define Servo_PIN      IfxGtm_ATOM2_4_TOUT30_P33_8_OUT       //定义舵机引脚
 
 

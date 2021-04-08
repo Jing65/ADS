@@ -51,6 +51,11 @@ extern float Max[(AD_NUM+AI_NUM)];
 extern uint8 If_Start;
 extern uint8 collect_max_flag;
 extern uint8 type_of_road;
+extern uint8 into_the_ring;
+extern uint8 right_round;
+extern uint8 left_round;
+extern uint8 out_the_ring;
+extern uint8 in_the_round;
 //extern int16 right_threshould;
 //extern int16 cancel_right_ad;
 //extern int16 _SCFTM;
@@ -64,7 +69,10 @@ typedef struct
      int16 round_misjudge_num;
      int16 round_misjudge_single;
      int16 round_SCFTM;
-
+     int16 into_round;
+     int16 cancel_ir;
+     int16 round_outjudge;
+     int16 out_flagjudge;
 } Judgment_threshold;
 
 extern Judgment_threshold long_theshold,short_theshold;

@@ -103,7 +103,7 @@ int core0_main(void)
     //电感初始化
     elec_init();
     //陀螺仪初始化
-    MPU_Init();
+//    MPU_Init();
     //菜单就绪
     Read_flash();
     if(!GPIO_Read(P20,7))
@@ -133,8 +133,22 @@ int core0_main(void)
     {
         //拨码3控制是否使用菜单,拨码6控制电机启动，拨码5电机停止，拨码1刷新屏幕（启用菜单时有效），拨码4控制是否读取法最大值数组，拨码2控制采短前瞻还是长前瞻
 
+
         //
         //菜单按键操作检测，
+//        if(!GPIO_Read(P02,5))
+//        {
+//            GPIO_Set(P02,8, 1);
+//        }
+//        else
+//        {
+//            GPIO_Set(P02,8, 0);
+//        }
+//        SmartCar_Gtm_Pwm_Setduty(&Motor_PIN_0,0);
+//        SmartCar_Gtm_Pwm_Setduty(&Motor_PIN_1,3000);
+
+
+//正式程序
         key_start();
         //AI处理程序
         if(process_type_ai!=0)
@@ -156,6 +170,8 @@ int core0_main(void)
         {
             Elec_process();
         }
+
+
 
 
 //        else if(process_type_ai==2)
@@ -218,9 +234,12 @@ IFX_INTERRUPT(cc60_pit_ch1_isr, 0, CCU6_0_CH1_ISR_PRIORITY)
 IFX_INTERRUPT(cc61_pit_ch0_isr, 0, CCU6_1_CH0_ISR_PRIORITY)
 {
     enableInterrupts();//开启中断嵌套
-//    Servo_Elec_AI();
+
     if(process_type_ai!=0)
-    Servo_Elec_AI();
+    {
+        Servo_Elec_AI();
+    }
+
     else if(process_type_ai==0)
     {
         if(short_control!=1)
@@ -228,12 +247,11 @@ IFX_INTERRUPT(cc61_pit_ch0_isr, 0, CCU6_1_CH0_ISR_PRIORITY)
             Servo_Elec();
         }
 
-        else if(short_control==1)
+        if(short_control==1)
         {
             Short_Servo_Elec();
         }
     }
-
     PIT_CLEAR_FLAG(CCU6_1, PIT_CH0);
 
 }
