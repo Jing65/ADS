@@ -22,6 +22,7 @@
 #define AI_NUM 9
 #define SampleTimes 26
 #define SampleTimes_AI 26
+#define send_AI_num   9
 #define SendDataTime   11
 /**********************************************************************************************************************
 *  @brief      获取AD转化值
@@ -43,6 +44,12 @@ void Get_AI_AD (void);
 void Short_process(void);
 void Long_process(void);
 void send_ad(void);
+void Short_AD_normalization(void);
+void Long_AD_normalization(void);
+void Short_AD_Sample(void);
+void Long_AD_Sample(void);
+void NNOM_process(void);
+void Send_tesst(void);
 //void Save_ADMAX(void);
 //void Read_AD(void);
 extern float err_synthetical_now;
@@ -56,6 +63,7 @@ extern uint8 right_round;
 extern uint8 left_round;
 extern uint8 out_the_ring;
 extern uint8 in_the_round;
+extern int8 ai_data[9];
 //extern int16 right_threshould;
 //extern int16 cancel_right_ad;
 //extern int16 _SCFTM;
@@ -73,6 +81,7 @@ typedef struct
      int16 cancel_ir;
      int16 round_outjudge;
      int16 out_flagjudge;
+     int16 cancel_right_intheround_ad;
 } Judgment_threshold;
 
 extern Judgment_threshold long_theshold,short_theshold;

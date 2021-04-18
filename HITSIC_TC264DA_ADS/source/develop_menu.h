@@ -16,7 +16,7 @@
 #include "SmartCar_GPIO.h"
 #include "long_adc.h"
 
-#define NAME_MAX 20//菜单项名字长度的极限
+#define NAME_MAX 30//菜单项名字长度的极限
 #define ITEM_MAX 130//菜单项数目的极限
 #define PARA_MAX 110//参量型菜单项数目的极限
 
@@ -25,7 +25,7 @@ extern uint16 ParaNum;
 extern uint16 OrderNum;
 extern uint16 CurItem;
 extern uint16 CurMenu;
-
+extern int8 servo_p;
 
 //用于测试版本（单纯测试电机好不好用）
 enum ITEMID//注意和ID一一对应***顺序不能搞错***
@@ -37,7 +37,7 @@ enum ITEMID//注意和ID一一对应***顺序不能搞错***
     KP_M, KI_M, MOTOR_1, MOTOR_2, MOTOR_3, MOTOR_4,
     U_1, U_2, U_3, U_4, U_5,
     thre_1,thre_2,thre_3,thre_4,thre_5,thre_6,thre_7,thre_8,thre_9,thre_10,thre_11,thre_12,thre_13,thre_14,thre_15,
-    thre_16,thre_17,thre_18,thre_19,thre_20,thre_21
+    thre_16,thre_17,thre_18,thre_19,thre_20,thre_21,thre_22,
 };
 
 enum KEY   //按键操作的类型

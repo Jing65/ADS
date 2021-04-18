@@ -81,14 +81,15 @@ uint8 right_round=0;
 uint8 left_round=0;
 uint8 out_the_ring=0;
 uint8 in_the_round=0;
-
+static int16 cancel_right_ad=0;
+int8 ai_data[9]={0};
 
 //static uint8 round_flag=0;
 
 _Bool send_data_flag=0;//1：ad数据采集完成   0：ad数据未采集完成
 uint8 collect_max_flag = 0;
 uint8 send_buff[SendDataTime];//WIFI传adc数据
-
+uint8 send_test[21];//WIFI传adc数据
 float Max[(AD_NUM+AI_NUM)];
 //static uint32 Save_max[(AD_NUM+AI_NUM)];
 //int16 right_threshould=15;
@@ -106,59 +107,62 @@ void swap(uint16 *a,uint16 *b)
     *b=temp;
 }
 
-void LV_Sample(void)                             // adc采集函数
+
+
+
+void Long_AD_Sample(void)
 {
     uint16 LV_control[AD_NUM][SampleTimes];
-    uint16 LV_AI[AI_NUM][SampleTimes_AI];
     float transfer[AD_NUM]={0};
-    float transfer_AI[AI_NUM]={0};
-    if(short_control==0)
+    for (uint8 h=0;h<AD_NUM;h++)
+        {
+            for(uint8 i=0;i<=SampleTimes-1;i++)
+            {
+             /*获取采样初值*/
+                LV_control[h][i] = ADC_Get(channel_adc[h], channel_name[h], ADC_8BIT);
+
+            }
+        }
+
+    for(uint8 i=0;i<AD_NUM;i++)
     {
-        for (uint8 h=0;h<AD_NUM;h++)
-            {
-                for(uint8 i=0;i<=SampleTimes-1;i++)
-                {
-                 /*获取采样初值*/
-                    LV_control[h][i] = ADC_Get(channel_adc[h], channel_name[h], ADC_8BIT);
-
-                }
-            }
-
-        for(uint8 i=0;i<AD_NUM;i++)
+        for(uint8 j=0;j<=SampleTimes-1;j++)
         {
-            for(uint8 j=0;j<=SampleTimes-1;j++)
-            {
-                 if(LV_control[i][j]>256)//剔除毛刺信号
-                 {
-                     LV_control[i][j]=256;
-                 }
-            }
+             if(LV_control[i][j]>256)//剔除毛刺信号
+             {
+                 LV_control[i][j]=256;
+             }
         }
-        for(uint8 k=0;k<AD_NUM;k++)
+    }
+    for(uint8 k=0;k<AD_NUM;k++)
+    {
+        for(uint8 i=0;i<=SampleTimes-2;i++)
         {
-            for(uint8 i=0;i<=SampleTimes-2;i++)
+            for(uint8 j=i+1;j<=SampleTimes-1;j++)
             {
-                for(uint8 j=i+1;j<=SampleTimes-1;j++)
-                {
-                    if(LV_control[k][i]>LV_control[k][j])
-                    swap(&LV_control[k][i],&LV_control[k][j]);//������swap�����Լ�д
-                }
-            }
-        }
-        for(uint8 k=0;k<AD_NUM;k++)
-        {
-            for(uint8 i=3;i<SampleTimes-3;i++)
-            {
-                transfer[k]+=(float)((int16)LV_control[k][i]);
-            }
-            Average[k]=transfer[k]/(SampleTimes-6.0);
-            if( Average[k] < MinLVGot )
-            {
-                Average[k] = MinLVGot;
+                if(LV_control[k][i]>LV_control[k][j])
+                swap(&LV_control[k][i],&LV_control[k][j]);//������swap�����Լ�д
             }
         }
     }
+    for(uint8 k=0;k<AD_NUM;k++)
+    {
+        for(uint8 i=3;i<SampleTimes-3;i++)
+        {
+            transfer[k]+=(float)((int16)LV_control[k][i]);
+        }
+        Average[k]=transfer[k]/(SampleTimes-6.0);
+        if( Average[k] < MinLVGot )
+        {
+            Average[k] = MinLVGot;
+        }
+    }
+}
 
+void Short_AD_Sample(void)
+{
+    float transfer_AI[AI_NUM]={0};
+    uint16 LV_AI[AI_NUM][SampleTimes_AI];
     for (uint8 h=0;h<AI_NUM;h++)
     {
         for(uint8 i=0;i<=SampleTimes_AI-1;i++)
@@ -172,9 +176,9 @@ void LV_Sample(void)                             // adc采集函数
            {
                for(uint8 j=0;j<SampleTimes_AI;j++)
                {
-                    if(LV_AI[i][j]>256)//剔除毛刺信号
+                    if(LV_AI[i][j]>255)//剔除毛刺信号
                     {
-                        LV_AI[i][j]=256;
+                        LV_AI[i][j]=255;
                     }
                }
            }
@@ -189,8 +193,8 @@ void LV_Sample(void)                             // adc采集函数
             }
         }
     }
-           for(uint8 k=0;k<AI_NUM;k++)
-           {
+    for(uint8 k=0;k<AI_NUM;k++)
+          {
                for(uint8 i=3;i<=SampleTimes-4;i++)
                {
                    transfer_AI[k]+=(float)((int16)LV_AI[k][i]);
@@ -204,6 +208,64 @@ void LV_Sample(void)                             // adc采集函数
 
 }
 
+void NNOM_process(void)
+{
+    Short_AD_Sample();
+    Short_AD_normalization();
+//    int8 test[7]={5,0.05,5.5,62,127,0.05,115};
+//    int8 test[7]={34,1,41,127,73,1,53};
+//    int8 test[7]={40,0.05,50,127,50,0.05,40};
+    ai_data[0] = 0;
+    for(uint8 k=1;k<8;k++)
+    {
+        ai_data[k]=(int8)((int32)AD[k+7]-128);
+//        ai_data[k]=(int8)((int32)AD[k+7]);
+//        ai_data[k]=test[k-1]-128;
+    }
+    ai_data[8] = 0;
+}
+// adc采集函数
+void LV_Sample(void)
+{
+    if(short_control==0)
+    {
+        Long_AD_Sample();
+    }
+    Short_AD_Sample();
+}
+
+void Long_AD_normalization(void)
+{
+    for(uint8 i= 0;i<AD_NUM;i++)
+    {
+        //暂时去掉归一化 AD[i] = (100*LV[i])/Max[i];//(K = 100)
+        AD[i] = (100*Average[i])/Max[i];
+        if(AD[i]>255)
+            AD[i]=255;
+        //AD[i] = transfer[i];
+
+    }
+}
+
+void Short_AD_normalization(void)
+{
+    AD[7] = (127*Average_AI[0])/Max[7];//(K = 100)
+    AD[8] = (127*Average_AI[1])/Max[8];
+    AD[9] = (127*Average_AI[2])/Max[9];
+    AD[10] = (127*Average_AI[3])/Max[10];
+    AD[11] = (127*Average_AI[4])/Max[11];
+    AD[12] = (127*Average_AI[5])/Max[12];
+    AD[13] = (127*Average_AI[6])/Max[13];
+    AD[14] = (127*Average_AI[7])/Max[14];
+    AD[15] = (127*Average_AI[8])/Max[15];
+    for(uint8 i=AD_NUM;i<(AD_NUM+AI_NUM);i++)
+    {
+        if(AD[i]>255)
+        {
+            AD[i]=255;
+        }
+    }
+}
 
 void Get_AI_AD (void)
 {
@@ -214,35 +276,10 @@ void Get_AI_AD (void)
            {
                if(short_control==0)
                {
-                   for(uint8 i= 0;i<AD_NUM;i++)
-                   {
-                       //暂时去掉归一化 AD[i] = (100*LV[i])/Max[i];//(K = 100)
-                       AD[i] = (100*Average[i])/Max[i];
-                       if(AD[i]>255)
-                           AD[i]=255;
-                       //AD[i] = transfer[i];
-
-                   }
+                   Long_AD_normalization();
                }
-
-                       AD[7] = (127*Average_AI[0])/Max[7];//(K = 100)
-                       AD[8] = (127*Average_AI[1])/Max[8];
-                       AD[9] = (127*Average_AI[2])/Max[9];
-                       AD[10] = (127*Average_AI[3])/Max[10];
-                       AD[11] = (127*Average_AI[4])/Max[11];
-                       AD[12] = (127*Average_AI[5])/Max[12];
-                       AD[13] = (127*Average_AI[6])/Max[13];
-                       AD[14] = (127*Average_AI[7])/Max[14];
-                       AD[15] = (127*Average_AI[8])/Max[15];
-                       for(uint8 i=AD_NUM;i<(AD_NUM+AI_NUM);i++)
-                       {
-                           if(AD[i]>255)
-                           {
-                               AD[i]=255;
-                           }
-                       }
-                       //AD[i+AD_NUM] = transfer_AI[i];
-
+               Short_AD_normalization();
+               //AD[i+AD_NUM] = transfer_AI[i];
                send_data_flag=1;
            }
        }
@@ -288,6 +325,7 @@ void get_err(void)
     {
         //横电感差比积，右一减左一
         err_ad_now[0]=(AD[14]-AD[8])/(AD[14]*AD[8]+1);
+//        err_ad_now[0]=(AD[12]-AD[10])/(AD[12]*AD[10]+1);
         //竖横电感差比积，右减左+10减小竖电感差比积抖动
         err_ad_now[1]=(AD[13]-AD[9])/(AD[9]*AD[13]+2);
         //给竖电感较小的权重
@@ -548,11 +586,17 @@ void Short_process(void)
             acc_encoder=0;
         }
     }
-
-
+    if(in_the_round==1)
+    {
+        cancel_right_ad=short_theshold.cancel_right_intheround_ad;
+    }
+    else
+    {
+        cancel_right_ad=short_theshold.cancel_right_ad;
+    }
     if (type_of_road==11||type_of_road==10)
     {
-        if (AD[11]>short_theshold.cancel_right_ad&&acc_encoder>short_theshold._SCFTM)
+        if (AD[11]>cancel_right_ad&&acc_encoder>short_theshold._SCFTM)
         {
             type_of_road=0;
         }
@@ -575,18 +619,19 @@ void out_of_road(void)
     if(type_of_road==0)
     {
         uint8 count=0;
-        for(uint8 i= 0;i<=6;i++)
+        for(uint8 i= 8;i<=14;i++)
         {
              if (AD[i]<=1)
              {
                   count++;
              }
         }
-        if(count>=7)
+        if(count>=20)
         {
            If_Start = 0 ;
         }
     }
+
 }
 
 void Send_Data(void)
@@ -606,12 +651,39 @@ void Send_Data(void)
         send_buff[6]=(uint8)((int8)((int16)AD[12]-128));
         send_buff[7]=(uint8)((int8)((int16)AD[13]-128));
         send_buff[8]=(uint8)((int8)((int16)AD[14]-128));
-        send_buff[9]=(uint8)((int8)((int16)(127*(pwm_servo-servo_mid)/1.8)));
+        send_buff[9]=(uint8)((int8)((int16)(127*((pwm_servo-servo_mid)/1.8))));
         send_buff[10]=0x5a;
         SmartCar_Uart_Transfer(send_buff,11,0);
         send_data_flag=0;
     }
 }
+
+void Send_tesst(void)
+{
+    if(send_data_flag)
+    {
+        send_test[0]=0;
+        send_test[1]=0;
+        send_test[2]=0;//侧电感
+        for(uint8 i=0;i<7;i++)
+        {
+            send_test[(i+3)]=(uint8)((int8)((int32)AD[i+8]-128));
+        }
+        send_test[10]=0;//侧电感
+        send_test[11]=(uint8)((int8)((int32)(127*((pwm_servo-servo_mid)/1.8))));
+        send_test[12]=0;//电机
+//        send_test[12]=(uint8)((int8)(int32)(128*(pwm_moto/70)));
+        for(uint8 k=0;k<7;k++)
+        {
+            send_test[(k+13)]=0;
+        }
+        send_test[20]=0x5a;
+        SmartCar_Uart_Transfer(send_test,21,0);
+        send_data_flag=0;
+    }
+}
+
+
 
 
 void send_ad(void)
@@ -644,12 +716,13 @@ void Elec_process(void)
 //    out_of_road();
 //    if(send_ai_ad==1)
 //    {
-//        Send_Data();
+//    Send_Data();
+    Send_tesst();
 //    }
 //
 //    if(short_control==1)
 //    {
-    send_ad();
+//    send_ad();
 //        Send_Data();
 //    }
 

@@ -11,6 +11,7 @@ uint16 ParaNum = 0;   //参量型菜单项的数目
 uint16 OrderNum = 0;  //指令型菜单项的数目
 uint16 CurItem = 1;   //当前菜单项的ID
 uint16 CurMenu = MENU;//当前菜单的ID，初始化为1
+int8 servo_p=0;
 static item Item[ITEM_MAX];  //菜单项结构体数组
 static uint32 CAR_BUFFER[PARA_MAX];//flash中用来存数据的数组
 
@@ -33,14 +34,15 @@ void key_start(void)
              If_Start = 1;
           }
     }
-//    if(If_Start == 1)
-//    {
-//           if(!GPIO_Read(P20,8))
-//          {
-//             Delay_ms(STM1,200);
-//             If_Start = 0;
-//          }
-//    }
+    if(If_Start == 1)
+    {
+           if(!GPIO_Read(P20,8))
+          {
+             Delay_ms(STM1,200);
+             If_Start = 0;
+             servo_flag=0;
+          }
+    }
 }
 
 
@@ -175,7 +177,7 @@ void CreatMenu(void)//**创建并插入一个新项需要增加一个新ITEMID枚举项***
     Item[AD_7] = CreatItem(stateF_item, "AD_7", 0, 400);
     Item[AD_8] = CreatItem(stateF_item, "AI_left2", 0, 400);
     Item[AD_9] = CreatItem(stateF_item, "AI_left1", 0, 400);
-    Item[AD_10] = CreatItem(stateF_item, "AI_MID", 0, 400);
+    Item[AD_10] = CreatItem(stateF_item, "AI_Lshu", 0, 400);
     Item[AD_11] = CreatItem(stateF_item, "AI_LM", 0, 400);
     Item[AD_12] = CreatItem(stateF_item, "AI_MID", 0, 400);
     Item[AD_13] = CreatItem(stateF_item, "AI_RM", 0, 400);
@@ -215,8 +217,8 @@ void CreatMenu(void)//**创建并插入一个新项需要增加一个新ITEMID枚举项***
     Item[KP_M] = CreatItem(paraF_item, "KP_M", 0, 1000);
     Item[KI_M] = CreatItem(paraF_item, "KI_M", 0, 1000);
     Item[MOTOR_1] = CreatItem(paraF_item, "low_speed", 0,3);
-    Item[MOTOR_2] = CreatItem(paraF_item, "XXXX", 0, 50);
-    Item[MOTOR_3] = CreatItem(stateI_item, "RXXX", -30000, 30000);
+    Item[MOTOR_2] = CreatItem(paraF_item, "rspeed", 0, 3);
+    Item[MOTOR_3] = CreatItem(stateI_item, "servo_p", -30000, 30000);
     Item[MOTOR_4] = CreatItem(stateF_item, "RXXX", -500, 500);
     InsertItem(Item, MOTOR, KP_M);
     InsertItem(Item, MOTOR, KI_M);
@@ -252,7 +254,8 @@ void CreatMenu(void)//**创建并插入一个新项需要增加一个新ITEMID枚举项***
     Item[thre_16] = CreatItem(paraF_item, "servo_r", 0, 1.8);
     Item[thre_17] = CreatItem(paraF_item, "KP_S_S", 0, 100);
     Item[thre_18] = CreatItem(paraF_item, "KD_S_S", 0, 100);
-    Item[thre_19] = CreatItem(paraI_item, "out_roun", 0, 100);
+    Item[thre_19] = CreatItem(paraI_item, "out_roun", 0, 300);
+    Item[thre_20] = CreatItem(paraI_item, "inrouR", 0, 300);
     InsertItem(Item,THRESHOLD,thre_1);
     InsertItem(Item,THRESHOLD,thre_2);
     InsertItem(Item,THRESHOLD,thre_3);
@@ -272,6 +275,7 @@ void CreatMenu(void)//**创建并插入一个新项需要增加一个新ITEMID枚举项***
     InsertItem(Item,THRESHOLD,thre_17);
     InsertItem(Item,THRESHOLD,thre_18);
     InsertItem(Item,THRESHOLD,thre_19);
+    InsertItem(Item,THRESHOLD,thre_20);
 }
 
 void MenuInit(void)
@@ -283,6 +287,8 @@ void MenuInit(void)
     Item[KP_M].item_data.floatData=KP_m;
     Item[KI_M].item_data.floatData=KI_m;
     Item[MOTOR_1].item_data.floatData=lower_speed;
+    Item[MOTOR_2].item_data.floatData =Moto_Speed_inround;
+    Item[MOTOR_3].item_data.intData =(int16)servo_p;
     Item[LIMIT_S].item_data.floatData=LIMIT_SE;
     Item[SERVO_1].item_data.intData=acc_encoder;
     Item[U_1].item_data.intData=collect_max_flag;
@@ -308,6 +314,8 @@ void MenuInit(void)
     Item[thre_17].item_data.floatData =KP_S_S;
     Item[thre_18].item_data.floatData =KD_S_S;
     Item[thre_19].item_data.intData =short_theshold.out_flagjudge;
+    Item[thre_20].item_data.intData =short_theshold.cancel_right_intheround_ad;
+
 }
 
 void Read_flash(void)
@@ -334,6 +342,7 @@ void Read_flash(void)
     short_theshold.round_misjudge_single=Page_Read(0,19,int16);
     short_theshold.cancel_right_ad=Page_Read(0,20,int16);
     short_theshold._SCFTM=Page_Read(0,21,int16);
+    lower_speed=Page_Read(0,22,float);
     short_theshold.round_midjudge=Page_Read(0,23,int16);
     short_theshold.into_round=Page_Read(0,24,int16);
     short_theshold.round_SCFTM=Page_Read(0,25,int16);
@@ -342,6 +351,8 @@ void Read_flash(void)
     KP_S_S=Page_Read(0,28,float);
     KD_S_S=Page_Read(0,29,float);
     short_theshold.out_flagjudge=Page_Read(0,30,int16);
+    short_theshold.cancel_right_intheround_ad=Page_Read(0,31,int16);
+    Moto_Speed_inround=Page_Read(0,32,float);
 //暂时去掉    lower_speed=Page_Read(0,22,float);
 }
 
@@ -375,6 +386,8 @@ void DataUpdate(void)
      short_theshold.cancel_right_ad=Item[thre_10].item_data.intData;
      short_theshold._SCFTM=Item[thre_11].item_data.intData;
      lower_speed=Item[MOTOR_1].item_data.floatData;
+     Moto_Speed_inround=Item[MOTOR_2].item_data.floatData;
+     Item[MOTOR_3].item_data.intData=servo_p;
      short_theshold.round_midjudge=Item[thre_12].item_data.intData;
      short_theshold.into_round=Item[thre_13].item_data.intData;
      short_theshold.round_SCFTM=Item[thre_14].item_data.intData;
@@ -383,6 +396,8 @@ void DataUpdate(void)
      KP_S_S=Item[thre_17].item_data.floatData;
      KD_S_S=Item[thre_18].item_data.floatData;
      short_theshold.out_flagjudge=Item[thre_19].item_data.intData;
+     short_theshold.cancel_right_intheround_ad=Item[thre_20].item_data.intData;
+
 }
 
 void Save_data(void)
@@ -418,6 +433,8 @@ void Save_data(void)
     CAR_BUFFER[29]=float_conversion_uint32(KP_S_S);
     CAR_BUFFER[30]=float_conversion_uint32(KD_S_S);
     CAR_BUFFER[31]=short_theshold.out_flagjudge;
+    CAR_BUFFER[32]=short_theshold.cancel_right_intheround_ad;
+    CAR_BUFFER[33]=float_conversion_uint32(Moto_Speed_inround);
     Sector_Erase(0);
     for(uint8 i=0;i<PARA_MAX-1;i++)
     {

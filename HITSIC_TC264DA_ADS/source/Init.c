@@ -6,7 +6,7 @@
  */
 #include "Init.h"
 
-
+mpu_t my_mpu;
 void elec_init(void)//ADC初始化
 {
     ADC_Init(ADC_2, ADC2_CH4_A36);
@@ -83,8 +83,8 @@ void elec_init(void)//ADC初始化
 void PWM_init(void)
 {
     SmartCar_Gtm_Pwm_Init(&Servo_PIN, 50, (uint32)(servo_mid*100));
-    SmartCar_Gtm_Pwm_Init(&Motor_PIN_1, 16000, 0);
-    SmartCar_Gtm_Pwm_Init(&Motor_PIN_0, 16000, 0);
+    SmartCar_Gtm_Pwm_Init(&Motor_PIN_1, 9000, 0);
+    SmartCar_Gtm_Pwm_Init(&Motor_PIN_0, 9000, 0);
 }
 
 void PIT_init(void)
@@ -111,7 +111,22 @@ void Uart_init(void)
 
 void  MPU_Init(void)
 {
+    SmartCar_MPU_Set_DefaultConfig(&my_mpu);
+    SmartCar_MPU_Init2(&my_mpu);
 
 }
 
-
+void Read_Max(void)
+{
+    if(!GPIO_Read(P20,7))
+    {
+        Read_AD();
+    }
+    else
+    {
+        for(uint8 i=0;i<(AD_NUM+AI_NUM);i++)
+        {
+            Max[i]=0;
+        }
+    }
+}

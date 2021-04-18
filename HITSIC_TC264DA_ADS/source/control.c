@@ -17,11 +17,12 @@ float KD_S_S = 8.2;//电磁舵机调参
 //static float Stop_Min = 2;//出赛到保护的电磁的最小值
 static float pwm_servo_variation=0;
 static float err_synthetical_last = 0;
-static float pwm_moto = 0;
+float pwm_moto = 0;
 //static float pwm_moto_goal = 30;//电机速度（用于菜单调节）
 static float pwm_moto_add = 0;//电机PID控制增量
 static float Moto_Speed_Goal=0;//用于控制和Wifi上位机中的目标速度
 float Moto_Speed_Goal_Set=1.5;
+float Moto_Speed_inround=1.1;
 float lower_speed=1.0;
 float Moto_Speed_Goal_low=0.9;
 static float Moto_Speed_Real;//实际电机速度
@@ -29,21 +30,142 @@ static float Error_Moto_Now;//电机现在error
 static float Error_Moto_Last;//电机前一个error
 float Meter_every_Round = 0.48564;//数字需改！！！
 float LIMIT_SE = 1.8;//需要改（不改舵机可能不动）
-static float LIMIT_MO = 80;//需要改（补钙电机可能不动）
+static float LIMIT_MO = 70;//需要改（补钙电机可能不动）
 //static float pwm_servo_die = 0.1;
 uint8 short_control = 0;
 int16 sigle_k=4;
 int16 acc_encoder=0;
+void sendddd_data(void)
+{
+    float buffer[2]={0};
+    buffer[0]=Moto_Speed_Goal;
+    buffer[1]=Moto_Speed_Real;
+    SmartCar_VarUpload(buffer,2);
+}
+int16 servo_flag=0;
 
-void Moto_Speed(void)//电机控制
+void stop (void)
+{
+    if(servo_flag>2000&&!GPIO_Read(P02,5))
+    {
+       If_Start=0;
+       servo_flag=0;
+    }
+
+}
+void Moto_long(void)
 {
     if(If_Start == 0)
     {
         Moto_Speed_Goal = 0;
         If_Start = 0;
-    }
-    else if(type_of_road==0&&AD[6]>100&&AD[6]<140)
+    } else if(If_Start == 1)
     {
+        Moto_Speed_Goal = Moto_Speed_Goal_Set;
+    }
+    int16 ecoder_num=-SmartCar_Encoder_Get(GPT12_T2);
+    SmartCar_Encoder_Clear(GPT12_T2);
+    Moto_Speed_Real = 0.0001 * ((float)ecoder_num) * Meter_every_Round / 0.005;
+    //清除编码器
+    Error_Moto_Now = (Moto_Speed_Goal - Moto_Speed_Real);
+    pwm_moto_add = ((KP_m * (Error_Moto_Now - Error_Moto_Last)) + (KI_m * Error_Moto_Now));
+    Error_Moto_Last = Error_Moto_Now;
+    pwm_moto = (pwm_moto + pwm_moto_add);
+
+    //电机限幅
+    if(pwm_moto >= LIMIT_MO)
+    {
+        pwm_moto = LIMIT_MO;
+    }
+    else if(pwm_moto<=-LIMIT_MO)
+    {
+        pwm_moto = -LIMIT_MO;
+    }
+
+    //电机输出
+    if (pwm_moto>0)
+    {
+        SmartCar_Gtm_Pwm_Setduty(&Motor_PIN_1,0);
+        SmartCar_Gtm_Pwm_Setduty(&Motor_PIN_0,(uint32)(pwm_moto*100));
+    }
+    else if(pwm_moto<0)
+    {
+        SmartCar_Gtm_Pwm_Setduty(&Motor_PIN_1,(uint32)(-pwm_moto*100));
+        SmartCar_Gtm_Pwm_Setduty(&Motor_PIN_0,0);
+    }
+    acc_encoder += ecoder_num;
+    if(acc_encoder>32600)
+    {
+        acc_encoder=0;
+    }
+}
+void Moto_Speed(void)//电机控制
+{
+//    static uint32 flag=0;
+//    flag++;
+////    if(If_Start == 0)
+////    {
+////        Moto_Speed_Goal = 0;
+////        If_Start = 0;
+////    }
+////    else
+////    {
+//                if(flag<=1000)
+//                {
+//                    Moto_Speed_Goal= 1.2;
+//                }
+//                if(flag > 1000 && flag < 2000)
+//                {
+//                    Moto_Speed_Goal = 0;
+//                }
+//                if(flag == 2000)
+//                {
+//                    Moto_Speed_Goal = 1.2;
+//                    flag = 0;
+//                }
+////    }
+//        int16 ecoder_num=-SmartCar_Encoder_Get(GPT12_T2);
+//        SmartCar_Encoder_Clear(GPT12_T2);
+//        Moto_Speed_Real = 0.0001 * ((float)ecoder_num) * Meter_every_Round / 0.005;
+//        //清除编码器
+//        Error_Moto_Now = (Moto_Speed_Goal - Moto_Speed_Real);
+//        pwm_moto_add = ((KP_m * (Error_Moto_Now - Error_Moto_Last)) + (KI_m * Error_Moto_Now));
+//        Error_Moto_Last = Error_Moto_Now;
+//        pwm_moto = (pwm_moto + pwm_moto_add);
+//
+//        //电机限幅
+//        if(pwm_moto >= LIMIT_MO)
+//        {
+//            pwm_moto = LIMIT_MO;
+//        }
+//        else if(pwm_moto<=-LIMIT_MO)
+//        {
+//            pwm_moto = -LIMIT_MO;
+//        }
+//
+//        //电机输出
+//        if (pwm_moto>0)
+//        {
+//            SmartCar_Gtm_Pwm_Setduty(&Motor_PIN_1,0);
+//            SmartCar_Gtm_Pwm_Setduty(&Motor_PIN_0,(uint32)(pwm_moto*100));
+//        }
+//        else if(pwm_moto<0)
+//        {
+//            SmartCar_Gtm_Pwm_Setduty(&Motor_PIN_1,(uint32)(-pwm_moto*100));
+//            SmartCar_Gtm_Pwm_Setduty(&Motor_PIN_0,0);
+//        }
+
+
+
+    if(If_Start == 0)
+    {
+        Moto_Speed_Goal = 0;
+        If_Start = 0;
+    }
+    else if(type_of_road==0&&AD[11]>100&&AD[11]<140&&If_Start ==1&&in_the_round==0)
+//    else if(type_of_road!=10&&type_of_road!=11&&If_Start ==1)
+    {
+        servo_flag++;
         Moto_Speed_Goal = Moto_Speed_Goal_Set;
 //        if(AD[]+AD[]<high_thsou)
 //        {
@@ -54,8 +176,13 @@ void Moto_Speed(void)//电机控制
 //            Moto_Speed_Goal = Moto_Speed_Goal_low;
 //        }
     }
-    else
+    else if(If_Start ==1&&in_the_round==1)
     {
+        Moto_Speed_Goal = Moto_Speed_inround;
+    }
+    else if(If_Start ==1)
+    {
+        servo_flag++;
         Moto_Speed_Goal=lower_speed;
     }
 
@@ -96,6 +223,10 @@ void Moto_Speed(void)//电机控制
     if(acc_encoder>32600)
     {
         acc_encoder=0;
+    }
+    if(servo_flag>3000)
+    {
+        servo_flag=3000;
     }
 /**************************************************开环测电机*************************************************/
 //    static uint32 flag=0;
@@ -190,7 +321,15 @@ void Short_Servo_Elec(void)
         {
              pwm_servo =servo_mid-LIMIT_SE;
         }
-    SmartCar_Gtm_Pwm_Setduty(&Servo_PIN, (uint32)(pwm_servo*100));
+    if(servo_flag>100)
+    {
+        SmartCar_Gtm_Pwm_Setduty(&Servo_PIN, (uint32)(pwm_servo*100));
+    }
+    else
+    {
+        SmartCar_Gtm_Pwm_Setduty(&Servo_PIN, (uint32)(servo_mid*100));
+    }
+
 }
 
 void Servo_Elec(void)//电磁舵机控制
@@ -225,7 +364,9 @@ void Servo_Elec(void)//电磁舵机控制
     {
         pwm_servo =servo_mid+(float)sigle_k*LIMIT_SE/10;
     }
-    SmartCar_Gtm_Pwm_Setduty(&Servo_PIN, (uint32)(pwm_servo*100));
+
+        SmartCar_Gtm_Pwm_Setduty(&Servo_PIN, (uint32)(pwm_servo*100));
+
 //    /*********************************测舵机中值**********************************/
 //    uint32 pwm_servo_l=(uint32)(servo_mid*100);
 //    SmartCar_Gtm_Pwm_Setduty(&Servo_PIN, pwm_servo_l);
@@ -238,7 +379,19 @@ void Delay_Start(void)
     If_Start = 1;
 }
 
-
+float angle_init(float acc_,float angle_cur,float gyro_,float updatetime_ms)
+{
+    if(acc_ > 9.8)
+    acc_ = 9.8;
+    if(acc_ < -9.8)
+    acc_ = -9.8;//限幅
+    float angle_acc=0;
+    float angle_gyro=0;
+   angle_acc=asin(-acc_/9.8)*57.3;
+//   angle_gyro = angle_cur + gyro_ * ((float)updatetime_ms) * (0.001f);
+//   angle_cur += (gyro_ + (-angle_cur + angle_acc) * 1.25) * ((float)updatetime_ms) * (0.001f);
+   return angle_acc;
+}
 //void If_Find_Max(void)//是否开始寻找最大值
 //{
 //    //Flag_Find_Max==0

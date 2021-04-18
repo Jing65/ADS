@@ -24,10 +24,10 @@
 
 #include <IfxPort_Io.h>
 
-#define IIC_SCL_PIN_MODULE MODULE_P02
-#define IIC_SCL_PIN_NUM    5
-#define IIC_SDA_PIN_MODULE MODULE_P02
-#define IIC_SDA_PIN_NUM    4
+#define IIC_SCL_PIN_MODULE MODULE_P15
+#define IIC_SCL_PIN_NUM    4
+#define IIC_SDA_PIN_MODULE MODULE_P15
+#define IIC_SDA_PIN_NUM    5
 
 #define SIMIIC_DELAY_TIME 20
 

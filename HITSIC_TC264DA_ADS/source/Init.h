@@ -16,6 +16,7 @@
 #include "SmartCar_Encoder.h"
 #include "SmartCar_Uart.h"
 #include "SmartCar_Eru.h"
+#include "SmartCar_MPU.h"
 
 void elec_init(void);
 
@@ -29,4 +30,9 @@ void Eru_init(void);//外部中断初始化
 
 void Uart_init(void);
 
+void Read_Max(void);
+
+void  MPU_Init(void);
+
+extern mpu_t my_mpu;
 #endif /* SOURCE_INIT_H_ */

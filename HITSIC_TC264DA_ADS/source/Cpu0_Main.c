@@ -27,6 +27,7 @@
 #include "Ifx_Types.h"
 #include "IfxCpu.h"
 #include <ifxCpu_Irq.h>
+#include <DNN_drop_025_tmstp_1_nobntest.h>
 #include "IfxScuWdt.h"
 #include "SmartCar_Uart.h"
 #include "SmartCar_Upload.h"
@@ -40,12 +41,11 @@
 #include "SmartCar_Eru.h"
 #include "Init.h"
 #include "long_adc.h"
-#include "weights.h"
 
 #pragma section all "cpu0_dsram"
 //IfxCpu_syncEvent g_cpuSyncEvent;
     //AI控制参量
-#define send_AI_num   7
+
 int16 temp;
 int16 servo_value;
 extern const unsigned char model1[];
@@ -62,7 +62,7 @@ extern void get_model_info(const void *in_buf, model_info_struct *inf);
 void ai_process(void);
 void NNOM_process(void);
 
-int8 ai_data[7];
+
 uint8 ai_data_flag;
 uint8 ch_AI[AI_NUM]={ADC1_CH9_A25,ADC1_CH4_A20,ADC1_CH0_A16,ADC0_CH8_A8,ADC0_CH6_A6,ADC0_CH4_A4,ADC0_CH2_A2};
 uint8 AI_adc[AI_NUM]={ADC_1,ADC_1,ADC_1,ADC_0,ADC_0,ADC_0,ADC_0};
@@ -70,6 +70,7 @@ uint8 AI_adc[AI_NUM]={ADC_1,ADC_1,ADC_1,ADC_0,ADC_0,ADC_0,ADC_0};
 uint8 process_type_ai=0;
 uint8 nnom_pro=0;
 nnom_model_t* model;
+
 
 int core0_main(void)
 {
@@ -88,9 +89,9 @@ int core0_main(void)
     //初始化外设
     //屏幕初始化
     SmartCar_Oled_Init();
-    //GPIO初始化，02.8蜂鸣器
+    //GPIO初始化，02.8蜂鸣器，保存参数用
     GPIO_Init(P02,8, PUSHPULL,0);
-   //PWM初始化
+   //电机舵机PWM初始化
     PWM_init();
     //定时中断初始化
     PIT_init();
@@ -103,20 +104,14 @@ int core0_main(void)
     //电感初始化
     elec_init();
     //陀螺仪初始化
+//    mpu_t* this_mpu;
+//    this_mpu = &my_mpu;
+//    SmartCar_MPU_Set_DefaultConfig(this_mpu);
+//    SmartCar_MPU_Init2(this_mpu);
 //    MPU_Init();
     //菜单就绪
     Read_flash();
-    if(!GPIO_Read(P20,7))
-    {
-        Read_AD();
-    }
-    else
-    {
-        for(uint8 i=0;i<(AD_NUM+AI_NUM);i++)
-        {
-            Max[i]=0;
-        }
-    }
+    Read_Max();
     CreatMenu();
     MenuInit();
     PrintMenu();
@@ -128,37 +123,37 @@ int core0_main(void)
     IfxCpu_enableInterrupts();
 
 
-
     while(TRUE)
     {
+
+//        sendddd_data();
+//        float acc_y;
+//        float gyro_y;
+//        SmartCar_MPU_Getgyro2(this_mpu);
+//        SmartCar_MPU_Getacc2(this_mpu);
+//        acc_y = this_mpu->mpu_rawdata.acc_y;
+//        gyro_y = this_mpu->mpu_rawdata.gyro_y;
+//        float angle_curr=0;
+//        float angle_y=angle_init(acc_y,angle_curr,gyro_y,2);
+//        SmartCar_OLED_Printf6x8(0, 0, "%.4f", angle_y);
+
+        //正式程序
         //拨码3控制是否使用菜单,拨码6控制电机启动，拨码5电机停止，拨码1刷新屏幕（启用菜单时有效），拨码4控制是否读取法最大值数组，拨码2控制采短前瞻还是长前瞻
-
-
-        //
-        //菜单按键操作检测，
-//        if(!GPIO_Read(P02,5))
-//        {
-//            GPIO_Set(P02,8, 1);
-//        }
-//        else
-//        {
-//            GPIO_Set(P02,8, 0);
-//        }
-//        SmartCar_Gtm_Pwm_Setduty(&Motor_PIN_0,0);
-//        SmartCar_Gtm_Pwm_Setduty(&Motor_PIN_1,3000);
-
-
-//正式程序
         key_start();
-        //AI处理程序
+
+        //电磁处理程序
         if(process_type_ai!=0)
         {
             if(nnom_pro!=0)
             {
                 NNOM_process();
-                memcpy(nnom_input_data, ai_data, sizeof(nnom_input_data));
+//                memcpy(nnom_input_data, ai_data, sizeof(nnom_input_data));
+               for(uint8 i=0;i<9;i++)
+               {
+                   nnom_input_data[i]=ai_data[i];
+               }
                 model_run(model);
-                int8_t servo_p=nnom_output_data[0];
+                servo_p=nnom_output_data[0];
                 pwm_servo=servo_mid+((float)((int32)servo_p)*1.8)/127;
             }
             else
@@ -170,7 +165,7 @@ int core0_main(void)
         {
             Elec_process();
         }
-
+        stop();
 
 
 
@@ -259,36 +254,58 @@ IFX_INTERRUPT(cc61_pit_ch0_isr, 0, CCU6_1_CH0_ISR_PRIORITY)
 IFX_INTERRUPT(cc61_pit_ch1_isr, 0, CCU6_1_CH1_ISR_PRIORITY)
 {
     enableInterrupts();//开启中断嵌套
-    Moto_Speed();
+//    Moto_Speed();
+    Moto_long();
     PIT_CLEAR_FLAG(CCU6_1, PIT_CH1);
 }
 
-void NNOM_process(void)
-{
-    uint16 LV_A[send_AI_num][SampleTimes_AI];
-    for (uint8 h=0;h<send_AI_num;h++)
-    {
-        for(uint8 i=0;i<SampleTimes_AI;i++)
-        {
-         /*获取采样初值*/
-            LV_A[h][i] = ADC_Get(AI_adc[h], ch_AI[h], ADC_8BIT);
-        }
-    }
-    float AI[send_AI_num]={0};
-    float AI_average[send_AI_num]={0};
-    for(uint8 h=0;h<send_AI_num;h++)
-    {
-        for(uint8 i=3;i<SampleTimes_AI-3;i++)
-        {
-            AI[h]+=(float)LV_A[h][i];
-        }
-        AI_average[h]=AI[h]/(SampleTimes_AI-6.0);
-    }
-    for(uint8 k=0;k<7;k++)
-    {
-        ai_data[k]=(int8)((int32)((127*AI_average[k])/Max[k+8]));
-    }
-}
+//void NNOM_process(void)
+//{
+//    uint16 LV_A[send_AI_num][SampleTimes_AI];
+//    for (uint8 h=0;h<send_AI_num;h++)
+//    {
+//        for(uint8 i=0;i<SampleTimes_AI;i++)
+//        {
+//         /*获取采样初值*/
+//            LV_A[h][i] = ADC_Get(AI_adc[h], ch_AI[h], ADC_8BIT);
+//        }
+//    }
+//    for(uint8 i=0;i<send_AI_num;i++)
+//           {
+//               for(uint8 j=0;j<SampleTimes_AI;j++)
+//               {
+//                    if(LV_A[i][j]>256)//剔除毛刺信号
+//                    {
+//                        LV_A[i][j]=256;
+//                    }
+//               }
+//           }
+//    for(uint8 k=0;k<send_AI_num;k++)
+//    {
+//        for(uint8 i=0;i<=SampleTimes_AI-2;i++)
+//        {
+//            for(uint8 j=i+1;j<=SampleTimes_AI-1;j++)
+//            {
+//                if(LV_A[k][i]>LV_A[k][j])
+//                swap(&LV_A[k][i],&LV_A[k][j]);
+//            }
+//        }
+//    }
+//    float AI[send_AI_num]={0};
+//    float AI_average[send_AI_num]={0};
+//    for(uint8 h=0;h<send_AI_num;h++)
+//    {
+//        for(uint8 i=3;i<SampleTimes_AI-3;i++)
+//        {
+//            AI[h]+=(float)LV_A[h][i];
+//        }
+//        AI_average[h]=AI[h]/(SampleTimes_AI-6.0);
+//    }
+//    for(uint8 k=0;k<7;k++)
+//    {
+//        ai_data[k]=(int8)((int32)((180*AI_average[k])/Max[k+8]));
+//    }
+//}
 
 void ai_process(void)
 {
@@ -302,6 +319,27 @@ void ai_process(void)
             LV_A[h][i] = ADC_Get(AI_adc[h], ch_AI[h], ADC_8BIT);
         }
     }
+    for(uint8 i=0;i<send_AI_num;i++)
+           {
+               for(uint8 j=0;j<SampleTimes_AI;j++)
+               {
+                    if(LV_A[i][j]>256)//剔除毛刺信号
+                    {
+                        LV_A[i][j]=256;
+                    }
+               }
+           }
+    for(uint8 k=0;k<send_AI_num;k++)
+    {
+        for(uint8 i=0;i<=SampleTimes_AI-2;i++)
+        {
+            for(uint8 j=i+1;j<=SampleTimes_AI-1;j++)
+            {
+                if(LV_A[k][i]>LV_A[k][j])
+                swap(&LV_A[k][i],&LV_A[k][j]);
+            }
+        }
+    }
     float AI[send_AI_num]={0};
     float AI_average[send_AI_num]={0};
     for(uint8 h=0;h<send_AI_num;h++)
@@ -312,9 +350,9 @@ void ai_process(void)
         }
         AI_average[h]=AI[h]/(SampleTimes_AI-6.0);
     }
-    for(uint8 k=0;k<7;k++)
+    for(uint8 k=0;k<send_AI_num;k++)
     {
-        ai_data[k]=(int8)((int32)((127*AI_average[k])/Max[k+8]));
+        ai_data[k]=(int8)((int32)((120*AI_average[k])/Max[k+8]));
     }
     ai_data_flag = 1;
     if(ai_data_flag)
